@@ -1,0 +1,1 @@
+{"version":3,"file":"email-already-taken.error.js","sourceRoot":"","sources":["../../../../../src/modules/auth/domain/email-already-taken.error.ts"],"names":[],"mappings":";;;AAAA,MAAa,sBAAuB,SAAQ,KAAK;IAC/C,YAAY,KAAa;QACvB,KAAK,CAAC,iCAAiC,KAAK,EAAE,CAAC,CAAC;QAChD,IAAI,CAAC,IAAI,GAAG,wBAAwB,CAAC;IACvC,CAAC;CACF;AALD,wDAKC"}

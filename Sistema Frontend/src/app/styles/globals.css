@@ -1,0 +1,262 @@
+/* ============================================================
+   Finnova Design System — globals.css  v3
+   Tipografía : Inter (body) + Inter Tight (display / números)
+   Paleta     : Slate neutral + Blue-600 accent
+   Espaciado  : múltiplos de 4 / 8
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Tokens de diseño ─────────────────────────────────────── */
+:root {
+  color-scheme: light;
+
+  /* Canvas y superficies */
+  --color-canvas:          246 248 250;   /* gris azulado muy suave */
+  --color-surface:         255 255 255;
+  --color-surface-raised:  250 251 253;   /* superficies elevadas */
+  --color-border:          220 226 235;   /* slate-200 ligeramente más definido */
+  --color-border-subtle:   237 241 246;   /* slate-100 */
+
+  /* Texto */
+  --color-text-primary:    15  23  42;    /* slate-900 */
+  --color-text-secondary:  71  85  105;   /* slate-500 */
+  --color-text-tertiary:   148 163 184;   /* slate-400 — info auxiliar */
+  --color-text-disabled:   203 213 225;   /* slate-300 */
+
+  /* Acento — azul corporativo */
+  --color-accent:          37  99  235;   /* blue-600 */
+  --color-accent-hover:    29  78  216;   /* blue-700 */
+  --color-accent-subtle:   239 246 255;   /* blue-50 */
+  --color-accent-muted:    219 234 254;   /* blue-100 */
+  --color-accent-text:     30  64  175;   /* blue-800 — texto sobre fondo accent-subtle */
+
+  /* Semánticos */
+  --color-success:         22  163  74;   /* green-600 */
+  --color-success-bg:      240 253 244;   /* green-50 */
+  --color-success-border:  187 247 208;   /* green-200 */
+  --color-warning:         180  83   9;   /* amber-700 — más oscuro para mejor contraste */
+  --color-warning-bg:      255 251 235;   /* amber-50 */
+  --color-warning-border:  252 211 77;    /* amber-300 */
+  --color-danger:          185  28  28;   /* red-700 */
+  --color-danger-bg:       254 242 242;   /* red-50 */
+  --color-danger-border:   254 202 202;   /* red-200 */
+
+  /* Sidebar */
+  --sidebar-bg:            12  17  34;    /* slate-950 personalizado */
+  --sidebar-border:        22  31  55;    /* slate-800 */
+  --sidebar-text-muted:    100 116 139;   /* slate-500 */
+  --sidebar-text-idle:     148 163 184;   /* slate-400 */
+  --sidebar-text-hover:    203 213 225;   /* slate-300 */
+  --sidebar-text-active:   255 255 255;
+  --sidebar-item-active:   37  99  235;   /* blue-600 */
+  --sidebar-item-active-bg:255 255 255 / 0.08;
+
+  /* Tipografía */
+  --font-sans:    'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Inter Tight', 'Inter', system-ui, sans-serif;
+
+  /* Radios */
+  --radius-sm:  4px;
+  --radius-md:  6px;
+  --radius-lg:  8px;
+  --radius-xl:  10px;
+  --radius-2xl: 12px;
+
+  /* Focus */
+  --focus-ring:   2px solid rgb(37 99 235 / 0.8);
+  --focus-offset: 2px;
+
+  /* Sombras — muy sutiles, de estilo plano */
+  --shadow-xs: 0 1px 2px rgb(15 23 42 / 0.05);
+  --shadow-sm: 0 1px 3px rgb(15 23 42 / 0.07), 0 1px 2px rgb(15 23 42 / 0.04);
+  --shadow-md: 0 4px 8px -2px rgb(15 23 42 / 0.08), 0 2px 4px -1px rgb(15 23 42 / 0.04);
+}
+
+/* ── Reset / Base ─────────────────────────────────────────── */
+html {
+  color-scheme: light;
+  height: 100%;
+  overflow: hidden;
+  -webkit-tap-highlight-color: rgb(37 99 235 / 0.12);
+  text-size-adjust: 100%;
+}
+
+body {
+  @apply antialiased;
+  height: 100%;
+  overflow: hidden;
+  background-color: rgb(var(--color-canvas));
+  color: rgb(var(--color-text-primary));
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  touch-action: manipulation;
+  margin: 0;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+           env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+#root {
+  @apply h-full;
+  overflow: hidden;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  text-wrap: balance;
+  color: rgb(var(--color-text-primary));
+}
+
+p  { text-wrap: pretty; }
+[id] { scroll-margin-top: 4rem; }
+.tabular-nums { font-variant-numeric: tabular-nums; }
+
+/* ── Control heights ──────────────────────────────────────── */
+.control-height-sm  { @apply h-8  min-h-8  max-h-8; }
+.control-height-md  { @apply h-9  min-h-9  max-h-9; }
+.control-height-lg  { @apply h-10 min-h-10 max-h-10; }
+
+/* ── Focus ────────────────────────────────────────────────── */
+:focus:not(:focus-visible) { outline: none; }
+:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+  border-radius: var(--radius-md);
+}
+
+/* ── Form controls ────────────────────────────────────────── */
+input, select, textarea {
+  background-color: rgb(var(--color-surface));
+  color: rgb(var(--color-text-primary));
+}
+
+/* ── Motion ───────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .motion-safe-transition {
+    transition-property: color, background-color, border-color,
+                         opacity, box-shadow, transform;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Accesibilidad ────────────────────────────────────────── */
+.skip-link {
+  @apply sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100]
+         focus:rounded-md focus:bg-blue-600 focus:px-4 focus:py-2
+         focus:text-white focus:text-sm focus:shadow-lg;
+}
+
+/* ── Scrollbar fino ───────────────────────────────────────── */
+.clean-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--color-border)) transparent;
+  overscroll-behavior: contain;
+}
+.clean-scroll::-webkit-scrollbar       { width: 4px; height: 4px; }
+.clean-scroll::-webkit-scrollbar-track { background: transparent; }
+.clean-scroll::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--color-border));
+  border-radius: 4px;
+}
+
+/* ── Utilidades link-btn ──────────────────────────────────── */
+.link-btn {
+  @apply inline-flex items-center justify-center gap-1.5 rounded-md font-medium leading-none
+         touch-manipulation motion-safe-transition
+         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1;
+}
+
+.link-btn-outline {
+  @apply link-btn control-height-sm border border-slate-200 bg-white px-3 text-xs
+         text-slate-600 hover:border-slate-300 hover:bg-slate-50
+         active:bg-slate-100 focus-visible:ring-blue-500;
+}
+
+.link-btn-primary {
+  @apply link-btn control-height-sm border border-blue-600 bg-blue-600 px-3 text-xs
+         text-white hover:bg-blue-700 active:bg-blue-800 focus-visible:ring-blue-500;
+}
+
+/* ── Checkbox / Radio ─────────────────────────────────────── */
+.field-choice {
+  @apply flex min-h-10 cursor-pointer items-start gap-2.5 rounded-lg border
+         border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700
+         hover:border-slate-300 hover:bg-slate-50
+         has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-blue-500
+         has-[:focus-visible]:ring-offset-1;
+}
+.field-choice input { @apply mt-0.5 shrink-0 accent-blue-600; }
+
+/* ── Layout principal ─────────────────────────────────────── */
+.sidebar-shell {
+  background-color: rgb(var(--sidebar-bg));
+  border-right: 1px solid rgb(var(--sidebar-border));
+}
+
+.app-canvas {
+  background-color: rgb(var(--color-canvas));
+}
+
+/* ── Superficies de contenido ─────────────────────────────── */
+/*
+ * Todas las superficies blancas usan el mismo sistema:
+ * border slate-200 + bg-white + sombra xs
+ */
+.section-card-shell {
+  @apply min-w-0 rounded-xl border border-slate-200 bg-white;
+  box-shadow: var(--shadow-xs);
+}
+
+.data-table-shell {
+  @apply overflow-x-auto rounded-xl border border-slate-200 bg-white;
+  box-shadow: var(--shadow-xs);
+}
+
+.surface-panel {
+  @apply rounded-xl border border-slate-200 bg-white px-4 py-3;
+  box-shadow: var(--shadow-xs);
+}
+
+.surface-list {
+  @apply divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white px-4;
+  box-shadow: var(--shadow-xs);
+}
+
+/* ── Animaciones funcionales ──────────────────────────────── */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+.skeleton-pulse {
+  animation: skeleton-pulse 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up { animation: slide-up 0.2s ease-out; }
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fade-in { animation: fade-in 0.18s ease-out; }

@@ -1,0 +1,37 @@
+---
+description: Todo cambio de UI debe cumplir Web Interface Guidelines via skill web-design-guidelines
+globs:
+  - src/shared/ui/**/*
+  - src/features/**/presentation/**/*
+  - src/widgets/**/*
+  - src/pages/**/*
+  - src/app/styles/**/*
+alwaysApply: false
+---
+
+# Diseño UI — Web Interface Guidelines
+
+Antes de crear o modificar cualquier interfaz:
+
+1. Lee y aplica `.agents/skills/web-design-guidelines/SKILL.md`
+2. Obtén las reglas actuales desde:
+   `https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md`
+3. No inventes estilos propios; extiende `shared/ui` y `globals.css`
+
+## Reglas obligatorias (resumen)
+
+- **Accesibilidad**: labels/`aria-label`, HTML semántico, skip link, `aria-live` en toasts
+- **Focus**: `focus-visible:ring-*`, nunca `outline-none` sin reemplazo
+- **Formularios**: `autocomplete`, `name`, tipos correctos, errores inline rojos, placeholders con `…`
+- **Tipografía**: `text-balance` en títulos, `tabular-nums` en números, `Intl.*` para fechas/montos
+- **Animación**: respetar `prefers-reduced-motion`, no `transition-all`
+- **Navegación**: `Link`/`NavLink` para rutas — nunca `<button>` dentro de `<Link>`
+- **Touch**: `touch-manipulation`, safe areas con `env(safe-area-inset-*)`
+- **Contenido**: `min-w-0`, `truncate`/`break-words`, estados vacíos
+
+## Componentes base
+
+Usar siempre átomos/moléculas de `@shared/ui`. Clases utilitarias WIG en `globals.css`:
+- `.link-btn-outline` / `.link-btn-primary` para links con apariencia de botón
+- `.field-choice` para checkbox/radio con hit target único
+- `.motion-safe-transition` para transiciones permitidas

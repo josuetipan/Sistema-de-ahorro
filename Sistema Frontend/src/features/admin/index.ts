@@ -1,0 +1,11 @@
+export { AdminDashboardView } from './presentation/views/AdminDashboardView';
+export { AdminSociosView } from './presentation/views/AdminSociosView';
+export { AdminCuentasAhorroView } from './presentation/views/AdminCuentasAhorroView';
+export { AdminSolicitudesCreditoView } from './presentation/views/AdminSolicitudesCreditoView';
+export { AdminCreditosActivosView } from './presentation/views/AdminCreditosActivosView';
+export { AdminPagosView } from './presentation/views/AdminPagosView';
+export { AdminMovimientosView } from './presentation/views/AdminMovimientosView';
+export { AdminReportesView } from './presentation/views/AdminReportesView';
+export { AdminUsuariosRolesView } from './presentation/views/AdminUsuariosRolesView';
+export { AdminConfiguracionView } from './presentation/views/AdminConfiguracionView';
+export { AdminModulePlaceholder } from './presentation/views/AdminModulePlaceholder';

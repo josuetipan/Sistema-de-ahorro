@@ -1,0 +1,37 @@
+import { type AuthUserPayload } from '../../../auth/infrastructure/auth/current-user.decorator';
+import { CrearCuentaUseCase } from '../../application/use-cases/crear-cuenta.use-case';
+import { ListarAportesUseCase } from '../../application/use-cases/listar-aportes.use-case';
+import { VerificarAporteUseCase } from '../../application/use-cases/verificar-aporte.use-case';
+import { GetMetaConfigUseCase } from '../../application/use-cases/get-meta-config.use-case';
+import { ActualizarMetaConfigUseCase } from '../../application/use-cases/actualizar-meta-config.use-case';
+import { ListarSociosAhorroUseCase } from '../../application/use-cases/listar-socios-ahorro.use-case';
+import { GetSocioAhorroUseCase } from '../../application/use-cases/get-socio-ahorro.use-case';
+import { ListarSolicitudesUseCase } from '../../application/use-cases/listar-solicitudes.use-case';
+import { ResolverSolicitudUseCase } from '../../application/use-cases/resolver-solicitud.use-case';
+import { VerificarAporteHttpDto } from '../dto/verificar-aporte.http.dto';
+import { ActualizarMetaConfigHttpDto } from '../dto/actualizar-meta-config.http.dto';
+import { ResolverSolicitudHttpDto } from '../dto/resolver-solicitud.http.dto';
+import { CrearCuentaHttpDto } from '../dto/crear-cuenta.http.dto';
+export declare class AdminAhorroController {
+    private readonly crearCuenta;
+    private readonly listarAportes;
+    private readonly verificarAporte;
+    private readonly getMetaConfig;
+    private readonly actualizarMetaConfig;
+    private readonly listarSocios;
+    private readonly getSocio;
+    private readonly listarSolicitudes;
+    private readonly resolverSolicitud;
+    private readonly logger;
+    constructor(crearCuenta: CrearCuentaUseCase, listarAportes: ListarAportesUseCase, verificarAporte: VerificarAporteUseCase, getMetaConfig: GetMetaConfigUseCase, actualizarMetaConfig: ActualizarMetaConfigUseCase, listarSocios: ListarSociosAhorroUseCase, getSocio: GetSocioAhorroUseCase, listarSolicitudes: ListarSolicitudesUseCase, resolverSolicitud: ResolverSolicitudUseCase);
+    crearCuentaParaSocio(socioId: string, body: CrearCuentaHttpDto): Promise<import("../../domain/ports/cuenta.repository.port").CuentaResumen>;
+    aportes(estado?: string, mes?: string, cuentaId?: string): Promise<import("../../domain/ports/aporte.repository.port").AporteAdminItem[]>;
+    verificar(user: AuthUserPayload, aporteId: string, body: VerificarAporteHttpDto): Promise<import("../../domain/ports/aporte.repository.port").AporteResumen>;
+    meta(): Promise<import("../../domain/ports/meta-config.repository.port").MetaConfig>;
+    actualizarMeta(body: ActualizarMetaConfigHttpDto): Promise<import("../../domain/ports/meta-config.repository.port").MetaConfig>;
+    socios(): Promise<import("../../domain/ports/cuenta.repository.port").SocioAhorroResumen[]>;
+    socio(socioId: string): Promise<import("../../domain/ports/cuenta.repository.port").SocioAhorroResumen>;
+    solicitudes(estado?: string, tipo?: string): Promise<import("../../domain/ports/solicitud-cuenta.repository.port").SolicitudCuentaAdminItem[]>;
+    resolver(user: AuthUserPayload, solicitudId: string, body: ResolverSolicitudHttpDto): Promise<import("../../domain/ports/solicitud-cuenta.repository.port").SolicitudCuentaResumen>;
+    private mapError;
+}

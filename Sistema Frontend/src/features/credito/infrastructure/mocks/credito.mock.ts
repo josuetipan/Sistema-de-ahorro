@@ -1,0 +1,40 @@
+import type { Credito } from '../../domain/credito.entity';
+
+export const MOCK_CREDITOS: Credito[] = [
+  {
+    id: 'c1',
+    monto: 8000,
+    plazoMeses: 6,
+    tipo: 'Consumo',
+    estado: 'activo',
+    cuotaMensual: 1450,
+    cuotasPagadas: 2,
+    cuotasPendientes: 4,
+    proximoVencimiento: '2026-06-15',
+    tasaAnual: 0.18,
+  },
+  {
+    id: 'c2',
+    monto: 12000,
+    plazoMeses: 12,
+    tipo: 'Personal',
+    estado: 'activo',
+    cuotaMensual: 1180,
+    cuotasPagadas: 5,
+    cuotasPendientes: 7,
+    proximoVencimiento: '2026-06-20',
+    tasaAnual: 0.16,
+  },
+  {
+    id: 'c3',
+    monto: 5000,
+    plazoMeses: 3,
+    tipo: 'Consumo',
+    estado: 'pagado',
+    cuotaMensual: 1750,
+    cuotasPagadas: 3,
+    cuotasPendientes: 0,
+    proximoVencimiento: '2026-02-01',
+    tasaAnual: 0.15,
+  },
+];
