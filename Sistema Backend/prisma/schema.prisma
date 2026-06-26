@@ -1,0 +1,528 @@
+// FINNOVA — Sistema de Cooperativa de Ahorro y Crédito
+//
+// Estándares (prisma-skill):
+// - PK: id_<tabla> con gen_random_uuid()
+// - createdAt en cada tabla
+// - @@map("nombre_tabla_snake_case")
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── Enums ───────────────────────────────────────────────────────────────────
+
+enum EstadoSocio {
+  activo
+  inactivo
+  pendiente
+}
+
+enum TipoCuenta {
+  ahorro
+  corriente
+  credito
+}
+
+enum EstadoCuenta {
+  activa
+  inactiva
+  bloqueada
+  cerrada
+}
+
+enum TipoTransaccion {
+  deposito
+  retiro
+  transferencia
+  pago_credito
+  desembolso
+}
+
+enum EstadoSolicitud {
+  pendiente
+  aprobado
+  rechazado
+}
+
+enum EstadoCredito {
+  activo
+  pagado
+  vencido
+  cancelado
+}
+
+enum EstadoCuota {
+  pendiente
+  pagada
+  vencida
+}
+
+enum EstadoPago {
+  aprobado
+  pendiente
+  rechazado
+}
+
+enum TipoDocumento {
+  ine
+  comprobante
+  contrato
+  otro
+}
+
+enum EstadoDocumento {
+  verificado
+  pendiente
+  rechazado
+}
+
+enum EstadoAporte {
+  pendiente
+  verificado
+  incompleto
+  atrasado
+  rechazado
+}
+
+enum TipoSolicitudCuenta {
+  eliminacion
+  retiro
+}
+
+enum EstadoSolicitudCuenta {
+  pendiente
+  aprobada
+  rechazada
+}
+
+// ── Auth (JWT) ──────────────────────────────────────────────────────────────
+
+model City {
+  id_city    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String   @unique
+  is_active  Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  users User[]
+
+  @@map("cities")
+}
+
+model Role {
+  id_role     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @unique
+  code_role   String   @unique @map("code_role")
+  description String?
+  is_active   Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id_user                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  usuario                String    @unique
+  email                  String?   @unique
+  password_hash          String    @map("password_hash")
+  full_name              String    @map("full_name")
+  role_id                String    @map("role_id") @db.Uuid
+  city_id                String    @map("city_id") @db.Uuid
+  maturity_at            DateTime  @map("maturity_at")
+  phone_number           String?   @map("phone_number")
+  identification         String?
+  is_active              Boolean   @default(true) @map("is_active")
+  pending_password_reset Boolean   @default(true) @map("pending_password_reset")
+  last_login             DateTime? @map("last_login")
+  address                String?
+  avatar_url             String?   @map("avatar_url")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  role                     Role                @relation(fields: [role_id], references: [id_role])
+  city                     City                @relation(fields: [city_id], references: [id_city])
+  admin                    Admin?
+  refreshTokens            PasswordEncrypted[]
+  socio                    Socio?
+  invitacion               Invitacion?
+  solicitudesRevisadas     SolicitudCredito[]  @relation("SolicitudRevisor")
+  transaccionesRegistradas Transaccion[]       @relation("TransaccionRegistrador")
+  pagosRegistrados         Pago[]              @relation("PagoRegistrador")
+
+  @@index([role_id])
+  @@index([city_id])
+  @@map("users")
+}
+
+model Admin {
+  id_admin       String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String   @unique @map("user_id") @db.Uuid
+  full_name      String   @map("full_name")
+  email          String
+  identification String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [user_id], references: [id_user], onDelete: Cascade)
+
+  @@map("admins")
+}
+
+model PasswordEncrypted {
+  id_password_encrypted String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_usuario            String   @map("id_usuario") @db.Uuid
+  refresh               String
+  expires_at            DateTime @map("expires_at")
+  revocado              Boolean  @default(false)
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [id_usuario], references: [id_user], onDelete: Cascade)
+
+  @@index([id_usuario])
+  @@map("password_encrypted")
+}
+
+// ── Socios y cuentas ────────────────────────────────────────────────────────
+
+model Socio {
+  id_socio  String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id   String      @unique @map("user_id") @db.Uuid
+  codigo    String      @unique
+  estado    EstadoSocio @default(pendiente)
+  fechaAlta DateTime    @default(now()) @map("fecha_alta") @db.Date
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  user               User               @relation(fields: [user_id], references: [id_user], onDelete: Cascade)
+  cuentas            Cuenta[]
+  solicitudesCredito SolicitudCredito[]
+  creditos           Credito[]
+  documentos         Documento[]
+
+  @@map("socios")
+}
+
+model Cuenta {
+  id_cuenta       String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  socio_id        String       @map("socio_id") @db.Uuid
+  numeroCuenta    String       @unique @map("numero_cuenta")
+  nombre          String
+  color           String?
+  icono           String?
+  tipo            TipoCuenta   @default(ahorro)
+  estado          EstadoCuenta @default(activa)
+  saldo           Decimal      @default(0) @db.Decimal(14, 2)
+  saldoDisponible Decimal      @default(0) @map("saldo_disponible") @db.Decimal(14, 2)
+  moneda          String       @default("MXN") @db.Char(3)
+  totalDepositos  Decimal      @default(0) @map("total_depositos") @db.Decimal(14, 2)
+  totalRetiros    Decimal      @default(0) @map("total_retiros") @db.Decimal(14, 2)
+  fechaApertura   DateTime     @default(now()) @map("fecha_apertura") @db.Date
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  socio                Socio              @relation(fields: [socio_id], references: [id_socio], onDelete: Cascade)
+  metasAhorro          MetaAhorro[]
+  aportesMensuales     AporteMensual[]
+  transaccionesOrigen  Transaccion[]      @relation("CuentaOrigen")
+  transaccionesDestino Transaccion[]      @relation("CuentaDestino")
+  solicitudesCredito   SolicitudCredito[]
+  creditos             Credito[]
+  solicitudesOrigen    SolicitudCuenta[]  @relation("SolicitudCuentaOrigen")
+  solicitudesDestino   SolicitudCuenta[]  @relation("SolicitudCuentaDestino")
+
+  @@index([socio_id])
+  @@map("cuentas")
+}
+
+model MetaAhorro {
+  id_meta_ahorro String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cuenta_id      String    @map("cuenta_id") @db.Uuid
+  nombre         String
+  montoObjetivo  Decimal   @map("monto_objetivo") @db.Decimal(14, 2)
+  montoActual    Decimal   @default(0) @map("monto_actual") @db.Decimal(14, 2)
+  fechaLimite    DateTime? @map("fecha_limite") @db.Date
+  activa         Boolean   @default(true)
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  cuenta Cuenta @relation(fields: [cuenta_id], references: [id_cuenta], onDelete: Cascade)
+
+  @@index([cuenta_id])
+  @@map("metas_ahorro")
+}
+
+// ── Créditos ────────────────────────────────────────────────────────────────
+
+model ConfigCooperativa {
+  id_config_cooperativa String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre                String
+  rfc                   String?
+  direccion             String?
+  telefono              String?
+  tasaAhorroAnual       Decimal  @default(0) @map("tasa_ahorro_anual") @db.Decimal(5, 2)
+  tasaCreditoPersonal   Decimal  @default(0) @map("tasa_credito_personal") @db.Decimal(5, 2)
+  tasaCreditoConsumo    Decimal  @default(0) @map("tasa_credito_consumo") @db.Decimal(5, 2)
+  plazoMinimoMeses      Int      @default(6) @map("plazo_minimo_meses")
+  plazoMaximoMeses      Int      @default(60) @map("plazo_maximo_meses")
+  montoMinimoCredito    Decimal  @default(0) @map("monto_minimo_credito") @db.Decimal(14, 2)
+  montoMaximoCredito    Decimal  @default(0) @map("monto_maximo_credito") @db.Decimal(14, 2)
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  tiposCredito TipoCredito[]
+
+  @@map("config_cooperativa")
+}
+
+model TipoCredito {
+  id_tipo_credito       String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  config_cooperativa_id String  @map("config_cooperativa_id") @db.Uuid
+  nombre                String  @unique
+  tasaAnual             Decimal @map("tasa_anual") @db.Decimal(5, 2)
+  activo                Boolean @default(true)
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  configCooperativa  ConfigCooperativa  @relation(fields: [config_cooperativa_id], references: [id_config_cooperativa], onDelete: Cascade)
+  solicitudesCredito SolicitudCredito[]
+
+  @@index([config_cooperativa_id])
+  @@map("tipos_credito")
+}
+
+model SolicitudCredito {
+  id_solicitud_credito String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  socio_id             String          @map("socio_id") @db.Uuid
+  cuenta_id            String?         @map("cuenta_id") @db.Uuid
+  tipo_credito_id      String          @map("tipo_credito_id") @db.Uuid
+  monto                Decimal         @db.Decimal(14, 2)
+  plazoMeses           Int             @map("plazo_meses")
+  motivo               String
+  ingresosMensuales    Decimal         @map("ingresos_mensuales") @db.Decimal(14, 2)
+  estado               EstadoSolicitud @default(pendiente)
+  revisado_por         String?         @map("revisado_por") @db.Uuid
+  observaciones        String?
+  fechaSolicitud       DateTime        @default(now()) @map("fecha_solicitud")
+  fechaResolucion      DateTime?       @map("fecha_resolucion")
+  createdAt            DateTime        @default(now()) @map("created_at")
+
+  socio       Socio       @relation(fields: [socio_id], references: [id_socio], onDelete: Cascade)
+  cuenta      Cuenta?     @relation(fields: [cuenta_id], references: [id_cuenta], onDelete: SetNull)
+  tipoCredito TipoCredito @relation(fields: [tipo_credito_id], references: [id_tipo_credito])
+  revisadoPor User?       @relation("SolicitudRevisor", fields: [revisado_por], references: [id_user], onDelete: SetNull)
+  credito     Credito?
+  documentos  Documento[]
+
+  @@index([socio_id])
+  @@index([estado])
+  @@map("solicitudes_credito")
+}
+
+model Credito {
+  id_credito         String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  solicitud_id       String        @unique @map("solicitud_id") @db.Uuid
+  socio_id           String        @map("socio_id") @db.Uuid
+  cuenta_id          String        @map("cuenta_id") @db.Uuid
+  monto              Decimal       @db.Decimal(14, 2)
+  tasaAnual          Decimal       @map("tasa_anual") @db.Decimal(5, 2)
+  plazoMeses         Int           @map("plazo_meses")
+  tipo               String
+  estado             EstadoCredito @default(activo)
+  cuotaMensual       Decimal       @map("cuota_mensual") @db.Decimal(14, 2)
+  cuotasPagadas      Int           @default(0) @map("cuotas_pagadas")
+  cuotasPendientes   Int           @map("cuotas_pendientes")
+  proximoVencimiento DateTime?     @map("proximo_vencimiento") @db.Date
+  fechaDesembolso    DateTime?     @map("fecha_desembolso") @db.Date
+  createdAt          DateTime      @default(now()) @map("created_at")
+
+  solicitud     SolicitudCredito @relation(fields: [solicitud_id], references: [id_solicitud_credito], onDelete: Cascade)
+  socio         Socio            @relation(fields: [socio_id], references: [id_socio], onDelete: Cascade)
+  cuenta        Cuenta           @relation(fields: [cuenta_id], references: [id_cuenta])
+  cuotas        Cuota[]
+  pagos         Pago[]
+  transacciones Transaccion[]
+
+  @@index([socio_id])
+  @@index([estado])
+  @@map("creditos")
+}
+
+model Cuota {
+  id_cuota         String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  credito_id       String      @map("credito_id") @db.Uuid
+  numero           Int
+  fechaVencimiento DateTime    @map("fecha_vencimiento") @db.Date
+  capital          Decimal     @db.Decimal(14, 2)
+  interes          Decimal     @db.Decimal(14, 2)
+  total            Decimal     @db.Decimal(14, 2)
+  estado           EstadoCuota @default(pendiente)
+  createdAt        DateTime    @default(now()) @map("created_at")
+
+  credito Credito @relation(fields: [credito_id], references: [id_credito], onDelete: Cascade)
+  pago    Pago?
+
+  @@unique([credito_id, numero])
+  @@index([credito_id])
+  @@map("cuotas")
+}
+
+model Pago {
+  id_pago        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  credito_id     String     @map("credito_id") @db.Uuid
+  cuota_id       String     @unique @map("cuota_id") @db.Uuid
+  transaccion_id String     @unique @map("transaccion_id") @db.Uuid
+  monto          Decimal    @db.Decimal(14, 2)
+  comprobante    String     @unique
+  estado         EstadoPago @default(pendiente)
+  fechaPago      DateTime   @default(now()) @map("fecha_pago")
+  registrado_por String?    @map("registrado_por") @db.Uuid
+  createdAt      DateTime   @default(now()) @map("created_at")
+
+  credito       Credito     @relation(fields: [credito_id], references: [id_credito], onDelete: Cascade)
+  cuota         Cuota       @relation(fields: [cuota_id], references: [id_cuota], onDelete: Cascade)
+  transaccion   Transaccion @relation(fields: [transaccion_id], references: [id_transaccion], onDelete: Cascade)
+  registradoPor User?       @relation("PagoRegistrador", fields: [registrado_por], references: [id_user], onDelete: SetNull)
+
+  @@index([credito_id])
+  @@map("pagos")
+}
+
+// ── Transacciones y documentos ──────────────────────────────────────────────
+
+model Transaccion {
+  id_transaccion    String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cuenta_origen_id  String          @map("cuenta_origen_id") @db.Uuid
+  cuenta_destino_id String?         @map("cuenta_destino_id") @db.Uuid
+  credito_id        String?         @map("credito_id") @db.Uuid
+  tipo              TipoTransaccion
+  monto             Decimal         @db.Decimal(14, 2)
+  moneda            String          @default("MXN") @db.Char(3)
+  descripcion       String?
+  referencia        String          @unique
+  fecha             DateTime        @default(now())
+  registrado_por    String?         @map("registrado_por") @db.Uuid
+  createdAt         DateTime        @default(now()) @map("created_at")
+
+  cuentaOrigen  Cuenta   @relation("CuentaOrigen", fields: [cuenta_origen_id], references: [id_cuenta])
+  cuentaDestino Cuenta?  @relation("CuentaDestino", fields: [cuenta_destino_id], references: [id_cuenta], onDelete: SetNull)
+  credito       Credito? @relation(fields: [credito_id], references: [id_credito], onDelete: SetNull)
+  registradoPor User?    @relation("TransaccionRegistrador", fields: [registrado_por], references: [id_user], onDelete: SetNull)
+  pago          Pago?
+
+  @@index([cuenta_origen_id])
+  @@index([cuenta_destino_id])
+  @@index([fecha])
+  @@map("transacciones")
+}
+
+model Documento {
+  id_documento String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  socio_id     String          @map("socio_id") @db.Uuid
+  solicitud_id String?         @map("solicitud_id") @db.Uuid
+  nombre       String
+  tipo         TipoDocumento
+  urlArchivo   String          @map("url_archivo")
+  estado       EstadoDocumento @default(pendiente)
+  fechaSubida  DateTime        @default(now()) @map("fecha_subida")
+  createdAt    DateTime        @default(now()) @map("created_at")
+
+  socio     Socio             @relation(fields: [socio_id], references: [id_socio], onDelete: Cascade)
+  solicitud SolicitudCredito? @relation(fields: [solicitud_id], references: [id_solicitud_credito], onDelete: SetNull)
+
+  @@index([socio_id])
+  @@index([solicitud_id])
+  @@map("documentos")
+}
+
+// ── Vista usuario (ahorro) ────────────────────────────────────────────────────
+
+// Meta mensual GLOBAL del sistema: el mínimo y máximo que cada cuenta debe
+// ahorrar cada mes. Es un único registro (singleton) editable por el admin.
+model ConfiguracionMetaAhorro {
+  id_configuracion_meta_ahorro String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  meta_mensual                 Decimal  @default(0) @map("meta_mensual") @db.Decimal(14, 2)
+  meta_minima                  Decimal  @default(0) @map("meta_minima") @db.Decimal(14, 2)
+  meta_maxima                  Decimal  @default(0) @map("meta_maxima") @db.Decimal(14, 2)
+  createdAt                    DateTime @default(now()) @map("created_at")
+  updatedAt                    DateTime @updatedAt @map("updated_at")
+
+  @@map("configuracion_meta_ahorro")
+}
+
+model AporteMensual {
+  id_aporte_mensual String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cuenta_id         String       @map("cuenta_id") @db.Uuid
+  mes               String       @db.VarChar(7)
+  monto             Decimal      @db.Decimal(14, 2)
+  meta_mensual      Decimal      @map("meta_mensual") @db.Decimal(14, 2)
+  referencia        String?
+  comprobante       String       @unique
+  url_archivo       String       @map("url_archivo")
+  archivo_nombre    String?      @map("archivo_nombre")
+  descripcion       String?
+  observaciones     String?
+  estado            EstadoAporte @default(pendiente)
+  fecha_registro    DateTime     @default(now()) @map("fecha_registro")
+  verificado_por    String?      @map("verificado_por") @db.Uuid
+  fecha_verificacion DateTime?   @map("fecha_verificacion")
+  createdAt         DateTime     @default(now()) @map("created_at")
+
+  cuenta Cuenta @relation(fields: [cuenta_id], references: [id_cuenta], onDelete: Cascade)
+
+  @@unique([cuenta_id, mes])
+  @@index([cuenta_id])
+  @@index([estado])
+  @@index([mes])
+  @@map("aportes_mensuales")
+}
+
+model Invitacion {
+  id_invitacion String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  codigo        String   @unique
+  user_id       String   @unique @map("user_id") @db.Uuid
+  activo        Boolean  @default(true)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [user_id], references: [id_user], onDelete: Cascade)
+
+  @@index([codigo])
+  @@map("invitaciones")
+}
+
+// Solicitud del socio para eliminar una cuenta o retirar dinero.
+// El retiro puede transferir el saldo a otra cuenta (cuenta_destino_id).
+model SolicitudCuenta {
+  id_solicitud_cuenta String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cuenta_origen_id    String                @map("cuenta_origen_id") @db.Uuid
+  cuenta_destino_id   String?               @map("cuenta_destino_id") @db.Uuid
+  tipo                TipoSolicitudCuenta
+  monto               Decimal?              @db.Decimal(14, 2)
+  motivo              String?
+  estado              EstadoSolicitudCuenta @default(pendiente)
+  observaciones       String?
+  resuelto_por        String?               @map("resuelto_por") @db.Uuid
+  fecha_resolucion    DateTime?             @map("fecha_resolucion")
+  createdAt           DateTime              @default(now()) @map("created_at")
+
+  cuentaOrigen  Cuenta  @relation("SolicitudCuentaOrigen", fields: [cuenta_origen_id], references: [id_cuenta], onDelete: Cascade)
+  cuentaDestino Cuenta? @relation("SolicitudCuentaDestino", fields: [cuenta_destino_id], references: [id_cuenta], onDelete: SetNull)
+
+  @@index([cuenta_origen_id])
+  @@index([estado])
+  @@index([tipo])
+  @@map("solicitudes_cuenta")
+}
+
+model Banner {
+  id_banner  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  titulo     String
+  subtitulo  String?
+  imagen_url String   @map("imagen_url")
+  orden      Int      @default(0)
+  activo     Boolean  @default(true)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([activo])
+  @@index([orden])
+  @@map("banners")
+}

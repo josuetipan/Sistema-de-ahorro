@@ -1,0 +1,34 @@
+databases:
+  - name: finnova-db
+    databaseName: finnova
+    plan: free
+
+services:
+  - type: web
+    name: finnova-api
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: Sistema Backend
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
+    startCommand: pnpm start:prod:migrate
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: finnova-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 1d
+      - key: JWT_REFRESH_EXPIRES
+        value: 7d
+      - key: JWT_REFRESH_EXPIRES_DAYS
+        value: "7"
+      - key: CORS_ORIGIN
+        sync: false
+      - key: NODE_VERSION
+        value: "22"

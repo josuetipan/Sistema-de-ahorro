@@ -1,0 +1,1 @@
+{"version":3,"file":"role-name-already-taken.error.js","sourceRoot":"","sources":["../../../../../src/modules/auth/domain/role-name-already-taken.error.ts"],"names":[],"mappings":";;;AAAA,MAAa,yBAA0B,SAAQ,KAAK;IACtB;IAA5B,YAA4B,IAAY;QACtC,KAAK,CAAC,+BAA+B,IAAI,EAAE,CAAC,CAAC;QADnB,SAAI,GAAJ,IAAI,CAAQ;QAEtC,IAAI,CAAC,IAAI,GAAG,2BAA2B,CAAC;IAC1C,CAAC;CACF;AALD,8DAKC"}
