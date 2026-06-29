@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { UseCase } from '@shared/application/use-case.interface';
 import {
-  AporteMesAlreadyExistsError,
   ComprobanteAlreadyTakenError,
   CuentaForbiddenError,
   CuentaNotFoundError,
@@ -54,14 +53,7 @@ export class RegistrarAporteUseCase
       throw new CuentaForbiddenError();
     }
 
-    const yaExiste = await this.aportes.existsByCuentaAndMes(
-      input.cuentaId,
-      input.mes,
-    );
-    if (yaExiste) {
-      throw new AporteMesAlreadyExistsError(input.mes);
-    }
-
+    // Se permiten múltiples aportes en el mismo mes para una cuenta.
     const comprobanteUsado = await this.aportes.existsByComprobante(
       input.comprobante,
     );

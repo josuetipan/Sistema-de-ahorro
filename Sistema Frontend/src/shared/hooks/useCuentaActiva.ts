@@ -6,6 +6,7 @@ export function useCuentaActiva() {
   const seleccionarCuenta = useCuentaActivaStore((s) => s.seleccionarCuenta);
   const limpiarCuenta = useCuentaActivaStore((s) => s.limpiarCuenta);
   const agregarCuenta = useCuentaActivaStore((s) => s.agregarCuenta);
+  const setCuentas = useCuentaActivaStore((s) => s.setCuentas);
   const getCuentaActiva = useCuentaActivaStore((s) => s.getCuentaActiva);
 
   const cuentaActiva = cuentaActivaId
@@ -20,6 +21,7 @@ export function useCuentaActiva() {
     seleccionarCuenta,
     limpiarCuenta,
     agregarCuenta,
+    setCuentas,
     getCuentaActiva,
   };
 }

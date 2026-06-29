@@ -16,7 +16,6 @@ class RegistrarAporteHttpDto {
     mes;
     monto;
     comprobante;
-    urlArchivo;
     referencia;
     archivoNombre;
     descripcion;
@@ -29,6 +28,7 @@ __decorate([
     __metadata("design:type", String)
 ], RegistrarAporteHttpDto.prototype, "mes", void 0);
 __decorate([
+    (0, class_transformer_1.Type)(() => Number),
     (0, class_validator_1.IsNumber)({ maxDecimalPlaces: 2 }, { message: 'monto debe ser numérico' }),
     (0, class_validator_1.Min)(0.01, { message: 'monto debe ser mayor a 0' }),
     __metadata("design:type", Number)
@@ -39,11 +39,6 @@ __decorate([
     (0, class_transformer_1.Transform)(({ value }) => (typeof value === 'string' ? value.trim() : value)),
     __metadata("design:type", String)
 ], RegistrarAporteHttpDto.prototype, "comprobante", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MaxLength)(500, { message: 'urlArchivo admite como máximo 500 caracteres' }),
-    __metadata("design:type", String)
-], RegistrarAporteHttpDto.prototype, "urlArchivo", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),

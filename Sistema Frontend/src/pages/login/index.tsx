@@ -5,6 +5,7 @@ import { AuthLayout } from '@shared/ui/templates/AuthLayout';
 import { FinnovaLoginCard, LoginForm } from '@features/auth';
 import { useAuth } from '@shared/hooks/useAuth';
 import { canAccessRoute, getHomeRouteForRole } from '@shared/config/navigation';
+import { ROUTES } from '@shared/config/routes';
 
 export function LoginPage() {
   const { isAuthenticated, user } = useAuth();
@@ -14,6 +15,11 @@ export function LoginPage() {
 
   useEffect(() => {
     if (!isAuthenticated || !user) return;
+
+    if (user.pendingPasswordReset) {
+      navigate(ROUTES.CAMBIAR_PASSWORD, { replace: true });
+      return;
+    }
 
     const target =
       fromState && canAccessRoute(user.rol, fromState)

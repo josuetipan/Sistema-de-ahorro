@@ -15,7 +15,9 @@ var AdminAhorroController_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminAhorroController = void 0;
 const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
 const passport_1 = require("@nestjs/passport");
+const uploaded_file_1 = require("../../../../shared/presentation/uploaded-file");
 const user_role_1 = require("../../../auth/domain/user-role");
 const roles_decorator_1 = require("../../../auth/infrastructure/auth/roles.decorator");
 const roles_guard_1 = require("../../../auth/infrastructure/auth/roles.guard");
@@ -30,10 +32,17 @@ const listar_socios_ahorro_use_case_1 = require("../../application/use-cases/lis
 const get_socio_ahorro_use_case_1 = require("../../application/use-cases/get-socio-ahorro.use-case");
 const listar_solicitudes_use_case_1 = require("../../application/use-cases/listar-solicitudes.use-case");
 const resolver_solicitud_use_case_1 = require("../../application/use-cases/resolver-solicitud.use-case");
+const listar_banners_admin_use_case_1 = require("../../application/use-cases/listar-banners-admin.use-case");
+const crear_banner_use_case_1 = require("../../application/use-cases/crear-banner.use-case");
+const actualizar_banner_use_case_1 = require("../../application/use-cases/actualizar-banner.use-case");
+const eliminar_banner_use_case_1 = require("../../application/use-cases/eliminar-banner.use-case");
 const verificar_aporte_http_dto_1 = require("../dto/verificar-aporte.http.dto");
 const actualizar_meta_config_http_dto_1 = require("../dto/actualizar-meta-config.http.dto");
 const resolver_solicitud_http_dto_1 = require("../dto/resolver-solicitud.http.dto");
 const crear_cuenta_http_dto_1 = require("../dto/crear-cuenta.http.dto");
+const parse_pagination_1 = require("../../../../shared/presentation/parse-pagination");
+const crear_banner_http_dto_1 = require("../dto/crear-banner.http.dto");
+const actualizar_banner_http_dto_1 = require("../dto/actualizar-banner.http.dto");
 const ESTADOS_APORTE = [
     'pendiente',
     'verificado',
@@ -51,8 +60,12 @@ let AdminAhorroController = AdminAhorroController_1 = class AdminAhorroControlle
     getSocio;
     listarSolicitudes;
     resolverSolicitud;
+    listarBanners;
+    crearBanner;
+    actualizarBanner;
+    eliminarBanner;
     logger = new common_1.Logger(AdminAhorroController_1.name);
-    constructor(crearCuenta, listarAportes, verificarAporte, getMetaConfig, actualizarMetaConfig, listarSocios, getSocio, listarSolicitudes, resolverSolicitud) {
+    constructor(crearCuenta, listarAportes, verificarAporte, getMetaConfig, actualizarMetaConfig, listarSocios, getSocio, listarSolicitudes, resolverSolicitud, listarBanners, crearBanner, actualizarBanner, eliminarBanner) {
         this.crearCuenta = crearCuenta;
         this.listarAportes = listarAportes;
         this.verificarAporte = verificarAporte;
@@ -62,6 +75,10 @@ let AdminAhorroController = AdminAhorroController_1 = class AdminAhorroControlle
         this.getSocio = getSocio;
         this.listarSolicitudes = listarSolicitudes;
         this.resolverSolicitud = resolverSolicitud;
+        this.listarBanners = listarBanners;
+        this.crearBanner = crearBanner;
+        this.actualizarBanner = actualizarBanner;
+        this.eliminarBanner = eliminarBanner;
     }
     async crearCuentaParaSocio(socioId, body) {
         try {
@@ -78,17 +95,20 @@ let AdminAhorroController = AdminAhorroController_1 = class AdminAhorroControlle
             throw this.mapError(err);
         }
     }
-    async aportes(estado, mes, cuentaId) {
+    async aportes(estado, mes, cuentaId, page, limit) {
         if (estado && !ESTADOS_APORTE.includes(estado)) {
             throw new common_1.BadRequestException(`estado debe ser uno de: ${ESTADOS_APORTE.join(', ')}`);
         }
         if (mes && !/^\d{4}-(0[1-9]|1[0-2])$/.test(mes)) {
             throw new common_1.BadRequestException('mes debe tener el formato YYYY-MM');
         }
+        const pagination = (0, parse_pagination_1.parsePagination)(page, limit);
         return this.listarAportes.execute({
             estado: estado,
             mes,
             cuentaId,
+            page: pagination.page,
+            limit: pagination.limit,
         });
     }
     async verificar(user, aporteId, body) {
@@ -124,8 +144,12 @@ let AdminAhorroController = AdminAhorroController_1 = class AdminAhorroControlle
             throw this.mapError(err);
         }
     }
-    async socios() {
-        return this.listarSocios.execute();
+    async socios(page, limit) {
+        const pagination = (0, parse_pagination_1.parsePagination)(page, limit);
+        return this.listarSocios.execute({
+            page: pagination.page,
+            limit: pagination.limit,
+        });
     }
     async socio(socioId) {
         try {
@@ -135,10 +159,13 @@ let AdminAhorroController = AdminAhorroController_1 = class AdminAhorroControlle
             throw this.mapError(err);
         }
     }
-    async solicitudes(estado, tipo) {
+    async solicitudes(estado, tipo, page, limit) {
+        const pagination = (0, parse_pagination_1.parsePagination)(page, limit);
         return this.listarSolicitudes.execute({
             estado: estado,
             tipo: tipo,
+            page: pagination.page,
+            limit: pagination.limit,
         });
     }
     async resolver(user, solicitudId, body) {
@@ -154,11 +181,57 @@ let AdminAhorroController = AdminAhorroController_1 = class AdminAhorroControlle
             throw this.mapError(err);
         }
     }
+    async banners() {
+        return this.listarBanners.execute();
+    }
+    async crearBannerEndpoint(imagen, body) {
+        if (!imagen) {
+            throw new common_1.BadRequestException('La imagen (campo imagen) es requerida');
+        }
+        (0, uploaded_file_1.assertAllowedMime)(imagen, uploaded_file_1.IMAGE_MIME_TYPES);
+        return this.crearBanner.execute({
+            titulo: body.titulo,
+            subtitulo: body.subtitulo ?? null,
+            imagenUrl: (0, uploaded_file_1.toBase64DataUri)(imagen),
+            orden: body.orden,
+            activo: body.activo,
+        });
+    }
+    async actualizarBannerEndpoint(bannerId, imagen, body) {
+        let imagenUrl;
+        if (imagen) {
+            (0, uploaded_file_1.assertAllowedMime)(imagen, uploaded_file_1.IMAGE_MIME_TYPES);
+            imagenUrl = (0, uploaded_file_1.toBase64DataUri)(imagen);
+        }
+        try {
+            return await this.actualizarBanner.execute({
+                bannerId,
+                titulo: body.titulo,
+                subtitulo: body.subtitulo,
+                imagenUrl,
+                orden: body.orden,
+                activo: body.activo,
+            });
+        }
+        catch (err) {
+            throw this.mapError(err);
+        }
+    }
+    async eliminarBannerEndpoint(bannerId) {
+        try {
+            await this.eliminarBanner.execute(bannerId);
+            return { success: true };
+        }
+        catch (err) {
+            throw this.mapError(err);
+        }
+    }
     mapError(err) {
         if (err instanceof ahorro_errors_1.CuentaNotFoundError ||
             err instanceof ahorro_errors_1.AporteNotFoundError ||
             err instanceof ahorro_errors_1.SocioNotFoundError ||
-            err instanceof ahorro_errors_1.SolicitudCuentaNotFoundError) {
+            err instanceof ahorro_errors_1.SolicitudCuentaNotFoundError ||
+            err instanceof ahorro_errors_1.BannerNotFoundError) {
             return new common_1.NotFoundException(err.message);
         }
         if (err instanceof ahorro_errors_1.SolicitudYaResueltaError ||
@@ -186,8 +259,10 @@ __decorate([
     __param(0, (0, common_1.Query)('estado')),
     __param(1, (0, common_1.Query)('mes')),
     __param(2, (0, common_1.Query)('cuentaId')),
+    __param(3, (0, common_1.Query)('page')),
+    __param(4, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], AdminAhorroController.prototype, "aportes", null);
 __decorate([
@@ -216,8 +291,10 @@ __decorate([
 ], AdminAhorroController.prototype, "actualizarMeta", null);
 __decorate([
     (0, common_1.Get)('socios'),
+    __param(0, (0, common_1.Query)('page')),
+    __param(1, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], AdminAhorroController.prototype, "socios", null);
 __decorate([
@@ -231,8 +308,10 @@ __decorate([
     (0, common_1.Get)('solicitudes'),
     __param(0, (0, common_1.Query)('estado')),
     __param(1, (0, common_1.Query)('tipo')),
+    __param(2, (0, common_1.Query)('page')),
+    __param(3, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], AdminAhorroController.prototype, "solicitudes", null);
 __decorate([
@@ -245,6 +324,41 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, resolver_solicitud_http_dto_1.ResolverSolicitudHttpDto]),
     __metadata("design:returntype", Promise)
 ], AdminAhorroController.prototype, "resolver", null);
+__decorate([
+    (0, common_1.Get)('banners'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AdminAhorroController.prototype, "banners", null);
+__decorate([
+    (0, common_1.Post)('banners'),
+    (0, common_1.HttpCode)(201),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('imagen', { limits: { fileSize: uploaded_file_1.MAX_UPLOAD_BYTES } })),
+    __param(0, (0, common_1.UploadedFile)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, crear_banner_http_dto_1.CrearBannerHttpDto]),
+    __metadata("design:returntype", Promise)
+], AdminAhorroController.prototype, "crearBannerEndpoint", null);
+__decorate([
+    (0, common_1.Patch)('banners/:bannerId'),
+    (0, common_1.HttpCode)(200),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('imagen', { limits: { fileSize: uploaded_file_1.MAX_UPLOAD_BYTES } })),
+    __param(0, (0, common_1.Param)('bannerId', common_1.ParseUUIDPipe)),
+    __param(1, (0, common_1.UploadedFile)()),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, actualizar_banner_http_dto_1.ActualizarBannerHttpDto]),
+    __metadata("design:returntype", Promise)
+], AdminAhorroController.prototype, "actualizarBannerEndpoint", null);
+__decorate([
+    (0, common_1.Delete)('banners/:bannerId'),
+    (0, common_1.HttpCode)(200),
+    __param(0, (0, common_1.Param)('bannerId', common_1.ParseUUIDPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AdminAhorroController.prototype, "eliminarBannerEndpoint", null);
 exports.AdminAhorroController = AdminAhorroController = AdminAhorroController_1 = __decorate([
     (0, common_1.Controller)('admin/ahorro'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), roles_guard_1.RolesGuard),
@@ -257,6 +371,10 @@ exports.AdminAhorroController = AdminAhorroController = AdminAhorroController_1 
         listar_socios_ahorro_use_case_1.ListarSociosAhorroUseCase,
         get_socio_ahorro_use_case_1.GetSocioAhorroUseCase,
         listar_solicitudes_use_case_1.ListarSolicitudesUseCase,
-        resolver_solicitud_use_case_1.ResolverSolicitudUseCase])
+        resolver_solicitud_use_case_1.ResolverSolicitudUseCase,
+        listar_banners_admin_use_case_1.ListarBannersAdminUseCase,
+        crear_banner_use_case_1.CrearBannerUseCase,
+        actualizar_banner_use_case_1.ActualizarBannerUseCase,
+        eliminar_banner_use_case_1.EliminarBannerUseCase])
 ], AdminAhorroController);
 //# sourceMappingURL=admin-ahorro.controller.js.map

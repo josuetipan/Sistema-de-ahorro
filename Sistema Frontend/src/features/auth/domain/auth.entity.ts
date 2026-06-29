@@ -15,3 +15,14 @@ export interface RegisterInput {
   email: string;
   password: string;
 }
+
+export interface ResetPasswordInput {
+  idUsuario: string;
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ResetPasswordResult {
+  success: boolean;
+  message: string;
+}

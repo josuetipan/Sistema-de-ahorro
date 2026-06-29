@@ -9,7 +9,13 @@ import type { RefreshTokenRepositoryPort } from '../../domain/ports/refresh-toke
 export interface ChangePasswordInput {
   /** `id_user` del usuario. */
   userId: string;
-  currentPassword: string;
+  /**
+   * Contraseña actual.
+   * - Si se envía: se valida y el usuario deja de estar pendiente (`pending_password_reset = false`).
+   * - Si NO se envía: se cambia sin validar y queda pendiente (`pending_password_reset = true`),
+   *   para forzar el cambio en el próximo inicio de sesión.
+   */
+  currentPassword?: string;
   newPassword: string;
 }
 
@@ -29,15 +35,24 @@ export class ChangePasswordUseCase {
     if (!user.isActive) {
       throw new InvalidCredentialsError();
     }
-    const ok = await bcrypt.compare(
-      input.currentPassword,
-      user.passwordHash,
-    );
-    if (!ok) {
-      throw new InvalidCredentialsError('Contraseña actual incorrecta');
-    }
-    if (input.newPassword === input.currentPassword) {
-      throw new SameNewPasswordError();
+
+    const tieneCurrentPassword = Boolean(input.currentPassword?.trim());
+    let pendingPasswordReset: boolean;
+
+    if (tieneCurrentPassword) {
+      const ok = await bcrypt.compare(
+        input.currentPassword as string,
+        user.passwordHash,
+      );
+      if (!ok) {
+        throw new InvalidCredentialsError('Contraseña actual incorrecta');
+      }
+      if (input.newPassword === input.currentPassword) {
+        throw new SameNewPasswordError();
+      }
+      pendingPasswordReset = false;
+    } else {
+      pendingPasswordReset = true;
     }
 
     const passwordHash = await bcrypt.hash(input.newPassword, SALT_ROUNDS);
@@ -55,7 +70,7 @@ export class ChangePasswordUseCase {
       user.maturityAt,
       user.phoneNumber,
       user.identification,
-      false,
+      pendingPasswordReset,
     );
     await this.users.save(updated);
     await this.refreshRepo.revokeAllForUser(user.id);

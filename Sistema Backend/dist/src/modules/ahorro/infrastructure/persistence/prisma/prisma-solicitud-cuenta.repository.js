@@ -56,29 +56,39 @@ let PrismaSolicitudCuentaRepository = class PrismaSolicitudCuentaRepository {
         return row ? toResumen(row) : null;
     }
     async listForAdmin(filtro) {
-        const rows = await this.prisma.solicitudCuenta.findMany({
-            where: { estado: filtro.estado, tipo: filtro.tipo },
-            include: {
-                cuentaOrigen: {
-                    select: {
-                        numeroCuenta: true,
-                        socio: {
-                            select: {
-                                id_socio: true,
-                                user: { select: { full_name: true } },
+        const where = {
+            estado: filtro.estado,
+            tipo: filtro.tipo,
+        };
+        const [rows, total] = await this.prisma.$transaction([
+            this.prisma.solicitudCuenta.findMany({
+                where,
+                include: {
+                    cuentaOrigen: {
+                        select: {
+                            numeroCuenta: true,
+                            socio: {
+                                select: {
+                                    id_socio: true,
+                                    user: { select: { full_name: true } },
+                                },
                             },
                         },
                     },
                 },
-            },
-            orderBy: { createdAt: 'desc' },
-        });
-        return rows.map((row) => ({
+                orderBy: { createdAt: 'desc' },
+                skip: (filtro.page - 1) * filtro.limit,
+                take: filtro.limit,
+            }),
+            this.prisma.solicitudCuenta.count({ where }),
+        ]);
+        const items = rows.map((row) => ({
             ...toResumen(row),
             numeroCuentaOrigen: row.cuentaOrigen.numeroCuenta,
             socioId: row.cuentaOrigen.socio.id_socio,
             socioNombre: row.cuentaOrigen.socio.user.full_name,
         }));
+        return { items, total };
     }
     async listByUserId(userId) {
         const rows = await this.prisma.solicitudCuenta.findMany({

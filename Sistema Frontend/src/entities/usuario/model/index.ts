@@ -16,4 +16,6 @@ export interface Usuario {
   perfil?: Perfil;
   activo: boolean;
   createdAt: string;
+  /** true si el usuario debe cambiar su contraseña antes de continuar */
+  pendingPasswordReset?: boolean;
 }

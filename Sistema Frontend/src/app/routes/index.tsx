@@ -4,6 +4,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { ROUTES } from '@shared/config/routes';
 import { LoginPage } from '@/pages/login';
 import { RegistroPage } from '@/pages/registro';
+import { CambiarPasswordPage } from '@/pages/cambiarPassword';
 import { ElegirCuentaPage } from '@/pages/elegirCuenta';
 import { DashboardPage } from '@/pages/dashboard';
 import { MiCuentaPage } from '@/pages/miCuenta';
@@ -50,6 +51,14 @@ export function AppRoutes() {
       <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.LOGIN} replace />} />
       <Route path={ROUTES.LOGIN} element={<LoginPage />} />
       <Route path={ROUTES.REGISTRO} element={<RegistroPage />} />
+      <Route
+        path={ROUTES.CAMBIAR_PASSWORD}
+        element={
+          <ProtectedRoute>
+            <CambiarPasswordPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path={ROUTES.ELEGIR_CUENTA}
         element={

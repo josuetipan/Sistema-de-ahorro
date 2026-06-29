@@ -1,3 +1,4 @@
+import { type UploadedFileLike } from "../../../../shared/presentation/uploaded-file";
 import { type AuthUserPayload } from '../../../auth/infrastructure/auth/current-user.decorator';
 import { CrearCuentaUseCase } from '../../application/use-cases/crear-cuenta.use-case';
 import { ListarAportesUseCase } from '../../application/use-cases/listar-aportes.use-case';
@@ -8,10 +9,16 @@ import { ListarSociosAhorroUseCase } from '../../application/use-cases/listar-so
 import { GetSocioAhorroUseCase } from '../../application/use-cases/get-socio-ahorro.use-case';
 import { ListarSolicitudesUseCase } from '../../application/use-cases/listar-solicitudes.use-case';
 import { ResolverSolicitudUseCase } from '../../application/use-cases/resolver-solicitud.use-case';
+import { ListarBannersAdminUseCase } from '../../application/use-cases/listar-banners-admin.use-case';
+import { CrearBannerUseCase } from '../../application/use-cases/crear-banner.use-case';
+import { ActualizarBannerUseCase } from '../../application/use-cases/actualizar-banner.use-case';
+import { EliminarBannerUseCase } from '../../application/use-cases/eliminar-banner.use-case';
 import { VerificarAporteHttpDto } from '../dto/verificar-aporte.http.dto';
 import { ActualizarMetaConfigHttpDto } from '../dto/actualizar-meta-config.http.dto';
 import { ResolverSolicitudHttpDto } from '../dto/resolver-solicitud.http.dto';
 import { CrearCuentaHttpDto } from '../dto/crear-cuenta.http.dto';
+import { CrearBannerHttpDto } from '../dto/crear-banner.http.dto';
+import { ActualizarBannerHttpDto } from '../dto/actualizar-banner.http.dto';
 export declare class AdminAhorroController {
     private readonly crearCuenta;
     private readonly listarAportes;
@@ -22,16 +29,26 @@ export declare class AdminAhorroController {
     private readonly getSocio;
     private readonly listarSolicitudes;
     private readonly resolverSolicitud;
+    private readonly listarBanners;
+    private readonly crearBanner;
+    private readonly actualizarBanner;
+    private readonly eliminarBanner;
     private readonly logger;
-    constructor(crearCuenta: CrearCuentaUseCase, listarAportes: ListarAportesUseCase, verificarAporte: VerificarAporteUseCase, getMetaConfig: GetMetaConfigUseCase, actualizarMetaConfig: ActualizarMetaConfigUseCase, listarSocios: ListarSociosAhorroUseCase, getSocio: GetSocioAhorroUseCase, listarSolicitudes: ListarSolicitudesUseCase, resolverSolicitud: ResolverSolicitudUseCase);
+    constructor(crearCuenta: CrearCuentaUseCase, listarAportes: ListarAportesUseCase, verificarAporte: VerificarAporteUseCase, getMetaConfig: GetMetaConfigUseCase, actualizarMetaConfig: ActualizarMetaConfigUseCase, listarSocios: ListarSociosAhorroUseCase, getSocio: GetSocioAhorroUseCase, listarSolicitudes: ListarSolicitudesUseCase, resolverSolicitud: ResolverSolicitudUseCase, listarBanners: ListarBannersAdminUseCase, crearBanner: CrearBannerUseCase, actualizarBanner: ActualizarBannerUseCase, eliminarBanner: EliminarBannerUseCase);
     crearCuentaParaSocio(socioId: string, body: CrearCuentaHttpDto): Promise<import("../../domain/ports/cuenta.repository.port").CuentaResumen>;
-    aportes(estado?: string, mes?: string, cuentaId?: string): Promise<import("../../domain/ports/aporte.repository.port").AporteAdminItem[]>;
+    aportes(estado?: string, mes?: string, cuentaId?: string, page?: string, limit?: string): Promise<import("../../../../shared/application/pagination").PaginatedResult<import("../../domain/ports/aporte.repository.port").AporteAdminItem>>;
     verificar(user: AuthUserPayload, aporteId: string, body: VerificarAporteHttpDto): Promise<import("../../domain/ports/aporte.repository.port").AporteResumen>;
     meta(): Promise<import("../../domain/ports/meta-config.repository.port").MetaConfig>;
     actualizarMeta(body: ActualizarMetaConfigHttpDto): Promise<import("../../domain/ports/meta-config.repository.port").MetaConfig>;
-    socios(): Promise<import("../../domain/ports/cuenta.repository.port").SocioAhorroResumen[]>;
+    socios(page?: string, limit?: string): Promise<import("../../../../shared/application/pagination").PaginatedResult<import("../../domain/ports/cuenta.repository.port").SocioAhorroResumen>>;
     socio(socioId: string): Promise<import("../../domain/ports/cuenta.repository.port").SocioAhorroResumen>;
-    solicitudes(estado?: string, tipo?: string): Promise<import("../../domain/ports/solicitud-cuenta.repository.port").SolicitudCuentaAdminItem[]>;
+    solicitudes(estado?: string, tipo?: string, page?: string, limit?: string): Promise<import("../../../../shared/application/pagination").PaginatedResult<import("../../domain/ports/solicitud-cuenta.repository.port").SolicitudCuentaAdminItem>>;
     resolver(user: AuthUserPayload, solicitudId: string, body: ResolverSolicitudHttpDto): Promise<import("../../domain/ports/solicitud-cuenta.repository.port").SolicitudCuentaResumen>;
+    banners(): Promise<import("../../domain/ports/banner.repository.port").BannerResumen[]>;
+    crearBannerEndpoint(imagen: UploadedFileLike | undefined, body: CrearBannerHttpDto): Promise<import("../../domain/ports/banner.repository.port").BannerResumen>;
+    actualizarBannerEndpoint(bannerId: string, imagen: UploadedFileLike | undefined, body: ActualizarBannerHttpDto): Promise<import("../../domain/ports/banner.repository.port").BannerResumen>;
+    eliminarBannerEndpoint(bannerId: string): Promise<{
+        success: boolean;
+    }>;
     private mapError;
 }

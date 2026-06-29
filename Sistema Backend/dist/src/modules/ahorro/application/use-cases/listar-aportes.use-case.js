@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ListarAportesUseCase = void 0;
 const common_1 = require("@nestjs/common");
+const pagination_1 = require("../../../../shared/application/pagination");
 const aporte_repository_port_1 = require("../../domain/ports/aporte.repository.port");
 let ListarAportesUseCase = class ListarAportesUseCase {
     aportes;
@@ -21,7 +22,8 @@ let ListarAportesUseCase = class ListarAportesUseCase {
         this.aportes = aportes;
     }
     async execute(filtro) {
-        return this.aportes.listForAdmin(filtro);
+        const { items, total } = await this.aportes.listForAdmin(filtro);
+        return (0, pagination_1.paginate)(items, total, filtro.page, filtro.limit);
     }
 };
 exports.ListarAportesUseCase = ListarAportesUseCase;

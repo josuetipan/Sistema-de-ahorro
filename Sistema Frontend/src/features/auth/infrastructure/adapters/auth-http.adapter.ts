@@ -1,5 +1,11 @@
 import type { IAuthRepository } from '../../domain/auth.repository';
-import type { AuthSession, LoginInput, RegisterInput } from '../../domain/auth.entity';
+import type {
+  AuthSession,
+  LoginInput,
+  RegisterInput,
+  ResetPasswordInput,
+  ResetPasswordResult,
+} from '../../domain/auth.entity';
 import * as authApi from '../api/auth.api';
 import { toAuthSession } from '../mappers/auth.mapper';
 
@@ -20,5 +26,9 @@ export class AuthHttpAdapter implements IAuthRepository {
 
   async refreshToken(): Promise<{ token: string }> {
     return authApi.postRefreshToken();
+  }
+
+  async resetPassword(input: ResetPasswordInput): Promise<ResetPasswordResult> {
+    return authApi.postResetPassword(input);
   }
 }

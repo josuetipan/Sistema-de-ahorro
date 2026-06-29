@@ -3,6 +3,8 @@ export const ROUTES = {
   HOME: '/',
   LOGIN: '/login',
   REGISTRO: '/registro',
+  /** Cambio de contraseña obligatorio (pending_password_reset) */
+  CAMBIAR_PASSWORD: '/cambiar-password',
   /** Selección de cuenta (antes del sistema) */
   ELEGIR_CUENTA: '/elegir-cuenta',
   /** Cliente / operador */

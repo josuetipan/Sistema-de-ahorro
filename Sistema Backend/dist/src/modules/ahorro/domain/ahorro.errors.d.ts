@@ -28,6 +28,12 @@ export declare class MetaConfigInvalidaError extends Error {
 export declare class SaldoInsuficienteError extends Error {
     constructor();
 }
+export declare class BannerNotFoundError extends Error {
+    constructor(bannerId: string);
+}
+export declare class InvitacionNotFoundError extends Error {
+    constructor();
+}
 export declare class CuentaConSaldoError extends Error {
     constructor();
 }

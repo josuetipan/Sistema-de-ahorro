@@ -469,8 +469,7 @@ model AporteMensual {
 
   cuenta Cuenta @relation(fields: [cuenta_id], references: [id_cuenta], onDelete: Cascade)
 
-  @@unique([cuenta_id, mes])
-  @@index([cuenta_id])
+  @@index([cuenta_id, mes])
   @@index([estado])
   @@index([mes])
   @@map("aportes_mensuales")

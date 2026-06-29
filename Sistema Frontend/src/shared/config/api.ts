@@ -10,6 +10,13 @@ export const API_CONFIG = {
       logout: '/auth/logout',
       register: '/auth/register',
       refresh: '/auth/refresh',
+      resetPassword: '/auth/reset-password',
+    },
+    ahorro: {
+      resumen: '/ahorro/resumen',
+      cuentas: '/ahorro/cuentas',
+      aportes: '/ahorro/aportes',
+      miInvitacion: '/ahorro/mi-invitacion',
     },
     usuarios: '/usuarios',
     cuentas: '/cuentas',

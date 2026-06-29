@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
+import type { PageSlice } from '@shared/application/pagination';
 import type {
   CrearCuentaInput,
   CuentaOwnership,
@@ -97,6 +98,14 @@ export class PrismaCuentaRepository implements CuentaRepositoryPort {
     return rows.map(toResumen);
   }
 
+  async findSocioIdByUserId(userId: string): Promise<string | null> {
+    const socio = await this.prisma.socio.findUnique({
+      where: { user_id: userId },
+      select: { id_socio: true },
+    });
+    return socio?.id_socio ?? null;
+  }
+
   async findOwnership(cuentaId: string): Promise<CuentaOwnership | null> {
     const row = await this.prisma.cuenta.findUnique({
       where: { id_cuenta: cuentaId },
@@ -127,13 +136,24 @@ export class PrismaCuentaRepository implements CuentaRepositoryPort {
     return row ? toResumen(row) : null;
   }
 
-  async listSociosCustomer(): Promise<SocioAhorroResumen[]> {
-    const socios = await this.prisma.socio.findMany({
-      where: { user: { role: { code_role: 'CUSTOMER' } } },
-      include: { user: true, cuentas: { orderBy: { fechaApertura: 'asc' } } },
-      orderBy: { createdAt: 'desc' },
-    });
-    return socios.map((socio) => {
+  async listSociosCustomer(params: {
+    page: number;
+    limit: number;
+  }): Promise<PageSlice<SocioAhorroResumen>> {
+    const where: Prisma.SocioWhereInput = {
+      user: { role: { code_role: 'CUSTOMER' } },
+    };
+    const [socios, total] = await this.prisma.$transaction([
+      this.prisma.socio.findMany({
+        where,
+        include: { user: true, cuentas: { orderBy: { fechaApertura: 'asc' } } },
+        orderBy: { createdAt: 'desc' },
+        skip: (params.page - 1) * params.limit,
+        take: params.limit,
+      }),
+      this.prisma.socio.count({ where }),
+    ]);
+    const items = socios.map((socio) => {
       const cuentas = socio.cuentas.map(toResumen);
       const totalAhorrado = cuentas.reduce((acc, c) => acc + c.saldo, 0);
       return {
@@ -150,6 +170,7 @@ export class PrismaCuentaRepository implements CuentaRepositoryPort {
         cuentas,
       };
     });
+    return { items, total };
   }
 
   async getSocioCustomer(socioId: string): Promise<SocioAhorroResumen | null> {
