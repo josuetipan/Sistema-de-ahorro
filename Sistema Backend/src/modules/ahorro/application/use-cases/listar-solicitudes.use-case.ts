@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { UseCase } from '@shared/application/use-case.interface';
+import { paginate, type PaginatedResult } from '@shared/application/pagination';
 import {
   SOLICITUD_CUENTA_REPOSITORY,
   type ListarSolicitudesFiltro,
@@ -9,7 +10,8 @@ import {
 
 @Injectable()
 export class ListarSolicitudesUseCase
-  implements UseCase<ListarSolicitudesFiltro, SolicitudCuentaAdminItem[]>
+  implements
+    UseCase<ListarSolicitudesFiltro, PaginatedResult<SolicitudCuentaAdminItem>>
 {
   constructor(
     @Inject(SOLICITUD_CUENTA_REPOSITORY)
@@ -18,7 +20,8 @@ export class ListarSolicitudesUseCase
 
   async execute(
     filtro: ListarSolicitudesFiltro,
-  ): Promise<SolicitudCuentaAdminItem[]> {
-    return this.solicitudes.listForAdmin(filtro);
+  ): Promise<PaginatedResult<SolicitudCuentaAdminItem>> {
+    const { items, total } = await this.solicitudes.listForAdmin(filtro);
+    return paginate(items, total, filtro.page, filtro.limit);
   }
 }

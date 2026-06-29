@@ -8,7 +8,6 @@ import { ActionButton } from '@shared/ui/atoms/ActionButton';
 import { useAuth } from '@shared/hooks/useAuth';
 import { useToast } from '@shared/hooks/useToast';
 import { perfilSchema, type PerfilFormData } from '@shared/lib/validators';
-import { PerfilAvatar } from '@features/perfil/presentation/components/PerfilAvatar';
 
 export function PerfilView() {
   const { user, setUser } = useAuth();
@@ -35,30 +34,10 @@ export function PerfilView() {
     toast.success('Datos personales actualizados.');
   };
 
-  const actualizarFoto = (fotoPerfil: string) => {
-    if (!user) return;
-    setUser({
-      ...user,
-      perfil: { ...user.perfil, fotoPerfil },
-    });
-    toast.success('Foto de perfil actualizada.');
-  };
-
   return (
     <div className="flex w-full flex-col gap-4 lg:gap-6">
-      <div className="grid gap-4 lg:grid-cols-3 lg:items-stretch">
-        <div className="section-card-shell h-full min-h-[16rem] overflow-hidden p-0 lg:col-span-1">
-          <PerfilAvatar
-            nombre={user?.nombre ?? 'Usuario'}
-            fotoPerfil={user?.perfil?.fotoPerfil}
-            layout="card"
-            editable
-            onFotoChange={actualizarFoto}
-            className="h-full"
-          />
-        </div>
-
-        <SectionCard title="Datos personales" className="lg:col-span-2">
+      <div>
+        <SectionCard title="Datos personales">
           <form onSubmit={perfilForm.handleSubmit(guardarPerfil)} noValidate>
             <div className="grid gap-4 sm:grid-cols-2">
               <FormField label="Nombre" htmlFor="nombre" className="sm:col-span-2">

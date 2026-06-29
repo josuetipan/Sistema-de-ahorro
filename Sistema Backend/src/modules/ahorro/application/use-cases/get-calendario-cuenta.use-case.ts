@@ -97,9 +97,9 @@ export class GetCalendarioCuentaUseCase
       meses.push({
         mes: mesKey,
         numeroMes: m,
-        // La meta vigente es global; en meses con aporte se conserva el
-        // snapshot histórico que se guardó al registrarlo.
-        metaMensual: aporte?.metaMensual ?? meta.metaMensual,
+        // La meta es GLOBAL: siempre se usa la meta vigente, no el snapshot
+        // histórico del aporte.
+        metaMensual: meta.metaMensual,
         metaMinima: meta.metaMinima,
         metaMaxima: meta.metaMaxima,
         montoAportado: aporte?.monto ?? 0,

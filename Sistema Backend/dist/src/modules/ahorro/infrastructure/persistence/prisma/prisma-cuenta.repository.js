@@ -91,6 +91,13 @@ let PrismaCuentaRepository = class PrismaCuentaRepository {
         });
         return rows.map(toResumen);
     }
+    async findSocioIdByUserId(userId) {
+        const socio = await this.prisma.socio.findUnique({
+            where: { user_id: userId },
+            select: { id_socio: true },
+        });
+        return socio?.id_socio ?? null;
+    }
     async findOwnership(cuentaId) {
         const row = await this.prisma.cuenta.findUnique({
             where: { id_cuenta: cuentaId },
@@ -119,13 +126,21 @@ let PrismaCuentaRepository = class PrismaCuentaRepository {
         });
         return row ? toResumen(row) : null;
     }
-    async listSociosCustomer() {
-        const socios = await this.prisma.socio.findMany({
-            where: { user: { role: { code_role: 'CUSTOMER' } } },
-            include: { user: true, cuentas: { orderBy: { fechaApertura: 'asc' } } },
-            orderBy: { createdAt: 'desc' },
-        });
-        return socios.map((socio) => {
+    async listSociosCustomer(params) {
+        const where = {
+            user: { role: { code_role: 'CUSTOMER' } },
+        };
+        const [socios, total] = await this.prisma.$transaction([
+            this.prisma.socio.findMany({
+                where,
+                include: { user: true, cuentas: { orderBy: { fechaApertura: 'asc' } } },
+                orderBy: { createdAt: 'desc' },
+                skip: (params.page - 1) * params.limit,
+                take: params.limit,
+            }),
+            this.prisma.socio.count({ where }),
+        ]);
+        const items = socios.map((socio) => {
             const cuentas = socio.cuentas.map(toResumen);
             const totalAhorrado = cuentas.reduce((acc, c) => acc + c.saldo, 0);
             return {
@@ -142,6 +157,7 @@ let PrismaCuentaRepository = class PrismaCuentaRepository {
                 cuentas,
             };
         });
+        return { items, total };
     }
     async getSocioCustomer(socioId) {
         const socio = await this.prisma.socio.findUnique({

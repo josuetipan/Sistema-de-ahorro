@@ -2,6 +2,7 @@ import type {
   EstadoSolicitudCuenta,
   TipoSolicitudCuenta,
 } from '@prisma/client';
+import type { PageSlice } from '@shared/application/pagination';
 
 export const SOLICITUD_CUENTA_REPOSITORY = Symbol('SOLICITUD_CUENTA_REPOSITORY');
 
@@ -36,6 +37,8 @@ export interface CrearSolicitudInput {
 export interface ListarSolicitudesFiltro {
   estado?: EstadoSolicitudCuenta;
   tipo?: TipoSolicitudCuenta;
+  page: number;
+  limit: number;
 }
 
 export interface SolicitudCuentaRepositoryPort {
@@ -43,7 +46,7 @@ export interface SolicitudCuentaRepositoryPort {
   findById(solicitudId: string): Promise<SolicitudCuentaResumen | null>;
   listForAdmin(
     filtro: ListarSolicitudesFiltro,
-  ): Promise<SolicitudCuentaAdminItem[]>;
+  ): Promise<PageSlice<SolicitudCuentaAdminItem>>;
   listByUserId(userId: string): Promise<SolicitudCuentaResumen[]>;
   /** Rechaza la solicitud sin afectar saldos. */
   rechazar(

@@ -22,7 +22,7 @@ export function CuentaSelectionLayout({ children }: CuentaSelectionLayoutProps) 
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-slate-50">
+    <div className="relative flex h-screen flex-col overflow-hidden bg-slate-50">
       <header className={`w-full shrink-0 border-b border-white/8 bg-[#000B26] ${SIDEBAR_HEADER_HEIGHT_CLASS}`}>
         <div className="mx-auto flex h-full max-w-5xl items-center justify-between gap-4 px-5 md:px-8">
           <div className="flex min-w-0 items-center gap-3 text-left">
@@ -52,8 +52,8 @@ export function CuentaSelectionLayout({ children }: CuentaSelectionLayoutProps) 
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-8 md:px-8 md:py-10">
-        {children}
+      <main className="clean-scroll w-full flex-1 overflow-y-auto">
+        <div className="mx-auto w-full max-w-5xl px-5 py-8 md:px-8 md:py-10">{children}</div>
       </main>
     </div>
   );

@@ -12,7 +12,8 @@ export interface CuentaUsuario {
   color: string;
   icono: string;
   fechaApertura: string;
-  estado: 'activa' | 'inactiva';
+  /** Estado de la cuenta. Acepta los valores del backend (p. ej. 'activa', 'cerrada'). */
+  estado: string;
 }
 
 /** @deprecated Usar pagos verificados desde features/ahorro. Se mantiene para compatibilidad temporal. */

@@ -1,3 +1,4 @@
+import { type UploadedFileLike } from "../../../../shared/presentation/uploaded-file";
 import { type AuthUserPayload } from '../../../auth/infrastructure/auth/current-user.decorator';
 import { GetMisCuentasUseCase } from '../../application/use-cases/get-mis-cuentas.use-case';
 import { GetMetaConfigUseCase } from '../../application/use-cases/get-meta-config.use-case';
@@ -5,8 +6,15 @@ import { GetCalendarioCuentaUseCase } from '../../application/use-cases/get-cale
 import { RegistrarAporteUseCase } from '../../application/use-cases/registrar-aporte.use-case';
 import { CrearSolicitudCuentaUseCase } from '../../application/use-cases/crear-solicitud-cuenta.use-case';
 import { ListarMisSolicitudesUseCase } from '../../application/use-cases/listar-mis-solicitudes.use-case';
+import { ListarMisAportesUseCase } from '../../application/use-cases/listar-mis-aportes.use-case';
+import { GetComprobanteAporteUseCase } from '../../application/use-cases/get-comprobante-aporte.use-case';
+import { GetResumenAhorroUseCase } from '../../application/use-cases/get-resumen-ahorro.use-case';
+import { GetMiInvitacionUseCase } from '../../application/use-cases/get-mi-invitacion.use-case';
+import { ListarBannersUseCase } from '../../application/use-cases/listar-banners.use-case';
+import { CrearMiCuentaUseCase } from '../../application/use-cases/crear-mi-cuenta.use-case';
 import { RegistrarAporteHttpDto } from '../dto/registrar-aporte.http.dto';
 import { CrearSolicitudHttpDto } from '../dto/crear-solicitud.http.dto';
+import { CrearCuentaHttpDto } from '../dto/crear-cuenta.http.dto';
 export declare class AhorroController {
     private readonly getMisCuentas;
     private readonly getMetaConfig;
@@ -14,13 +22,43 @@ export declare class AhorroController {
     private readonly registrarAporte;
     private readonly crearSolicitud;
     private readonly listarMisSolicitudes;
+    private readonly listarMisAportes;
+    private readonly getComprobanteAporte;
+    private readonly getResumen;
+    private readonly getMiInvitacion;
+    private readonly listarBanners;
+    private readonly crearMiCuenta;
     private readonly logger;
-    constructor(getMisCuentas: GetMisCuentasUseCase, getMetaConfig: GetMetaConfigUseCase, getCalendario: GetCalendarioCuentaUseCase, registrarAporte: RegistrarAporteUseCase, crearSolicitud: CrearSolicitudCuentaUseCase, listarMisSolicitudes: ListarMisSolicitudesUseCase);
+    constructor(getMisCuentas: GetMisCuentasUseCase, getMetaConfig: GetMetaConfigUseCase, getCalendario: GetCalendarioCuentaUseCase, registrarAporte: RegistrarAporteUseCase, crearSolicitud: CrearSolicitudCuentaUseCase, listarMisSolicitudes: ListarMisSolicitudesUseCase, listarMisAportes: ListarMisAportesUseCase, getComprobanteAporte: GetComprobanteAporteUseCase, getResumen: GetResumenAhorroUseCase, getMiInvitacion: GetMiInvitacionUseCase, listarBanners: ListarBannersUseCase, crearMiCuenta: CrearMiCuentaUseCase);
     misCuentas(user: AuthUserPayload): Promise<import("../../application/use-cases/get-mis-cuentas.use-case").MisCuentasResult>;
+    resumen(user: AuthUserPayload): Promise<import("../../application/use-cases/get-resumen-ahorro.use-case").ResumenAhorroResult>;
     meta(): Promise<import("../../domain/ports/meta-config.repository.port").MetaConfig>;
+    banners(): Promise<import("../../domain/ports/banner.repository.port").BannerResumen[]>;
+    miInvitacion(user: AuthUserPayload): Promise<import("../../domain/ports/invitacion.repository.port").InvitacionResumen>;
+    crearCuenta(user: AuthUserPayload, body: CrearCuentaHttpDto): Promise<{
+        socioId: string;
+        titular: string;
+        idCuenta: string;
+        numeroCuenta: string;
+        nombre: string;
+        tipo: string;
+        estado: string;
+        moneda: string;
+        saldo: number;
+        saldoDisponible: number;
+        totalAhorrado: number;
+        totalDepositos: number;
+        totalRetiros: number;
+        color: string | null;
+        icono: string | null;
+        fechaApertura: Date;
+    }>;
+    aportes(user: AuthUserPayload, cuentaId?: string, desde?: string, hasta?: string, page?: string, limit?: string): Promise<import("../../../../shared/application/pagination").PaginatedResult<import("../../domain/ports/aporte.repository.port").AporteListItem>>;
+    comprobanteAporte(user: AuthUserPayload, aporteId: string): Promise<import("../../domain/ports/aporte.repository.port").AporteComprobante>;
     calendario(user: AuthUserPayload, cuentaId: string, anio?: string): Promise<import("../../application/use-cases/get-calendario-cuenta.use-case").CalendarioResult>;
-    registrarAportePago(user: AuthUserPayload, cuentaId: string, body: RegistrarAporteHttpDto): Promise<import("../../domain/ports/aporte.repository.port").AporteResumen>;
+    registrarAportePago(user: AuthUserPayload, cuentaId: string, archivo: UploadedFileLike | undefined, body: RegistrarAporteHttpDto): Promise<import("../../domain/ports/aporte.repository.port").AporteResumen>;
     solicitar(user: AuthUserPayload, cuentaId: string, body: CrearSolicitudHttpDto): Promise<import("../../domain/ports/solicitud-cuenta.repository.port").SolicitudCuentaResumen>;
     misSolicitudes(user: AuthUserPayload): Promise<import("../../domain/ports/solicitud-cuenta.repository.port").SolicitudCuentaResumen[]>;
+    private parseFecha;
     private mapError;
 }

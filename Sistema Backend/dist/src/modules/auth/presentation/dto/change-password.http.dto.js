@@ -22,8 +22,9 @@ __decorate([
     __metadata("design:type", String)
 ], ChangePasswordHttpDto.prototype, "idUsuario", void 0);
 __decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MinLength)(1, { message: 'La contraseña actual es obligatoria' }),
+    (0, class_validator_1.MinLength)(1, { message: 'La contraseña actual no puede estar vacía' }),
     __metadata("design:type", String)
 ], ChangePasswordHttpDto.prototype, "currentPassword", void 0);
 __decorate([

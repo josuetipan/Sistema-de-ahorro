@@ -1,19 +1,20 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ActionButton } from '@shared/ui/atoms/ActionButton';
 import { Input } from '@shared/ui/atoms/Input';
 import { NavIcon } from '@shared/ui/atoms/NavIcon';
 import { SectionHeading } from '@shared/ui/molecules/SectionHeading';
+import { StatusBadge } from '@shared/ui/molecules/StatusBadge';
+import { Table, type TableColumn } from '@shared/ui/molecules/Table';
 import { useCuentaActiva } from '@shared/hooks/useCuentaActiva';
 import { ROUTES } from '@shared/config/routes';
-import { formatCurrency } from '@shared/lib/formatters';
-import { PaymentList } from '@features/ahorro/presentation/components/PaymentList';
-import { usePagosAhorro } from '@features/ahorro/application/hooks/usePagosAhorro';
+import { formatCurrency, formatDate } from '@shared/lib/formatters';
+import { useResumenAhorro } from '@features/cuentas/application/hooks/useResumenAhorro';
+import { useAportes } from '@features/cuentas/application/hooks/useAportes';
+import type { Aporte } from '@features/cuentas/domain/cuenta.entity';
 import type { NavIconName } from '@shared/ui/atoms/NavIcon';
 
-function fechaHoy(): string {
-  return new Date().toISOString().split('T')[0];
-}
+const LIMITE = 10;
 
 const ACCESOS: { to: string; label: string; icon: NavIconName; destacado?: boolean }[] = [
   { to: ROUTES.PAGOS, label: 'Registrar pago', icon: 'upload', destacado: true },
@@ -23,25 +24,50 @@ const ACCESOS: { to: string; label: string; icon: NavIconName; destacado?: boole
 
 export function MisAhorrosView() {
   const { cuentaActiva } = useCuentaActiva();
-  const { pagos, resumen, cargando } = usePagosAhorro({ cuentaId: cuentaActiva?.id });
-  const [desde, setDesde] = useState(fechaHoy);
-  const [hasta, setHasta] = useState(fechaHoy);
-  const [filtrados, setFiltrados] = useState<typeof pagos | null>(null);
+  const { cuentas } = useResumenAhorro();
+
+  const [desde, setDesde] = useState('');
+  const [hasta, setHasta] = useState('');
+  const [filtros, setFiltros] = useState<{ desde?: string; hasta?: string }>({});
+  const [page, setPage] = useState(1);
+
+  const { aportes, cargando, totalPages, total } = useAportes({
+    cuentaId: cuentaActiva?.id,
+    limit: LIMITE,
+    page,
+    desde: filtros.desde,
+    hasta: filtros.hasta,
+  });
+
+  const cuenta = useMemo(
+    () => cuentas.find((c) => c.cuentaId === cuentaActiva?.id),
+    [cuentas, cuentaActiva?.id],
+  );
 
   const buscar = () => {
-    if (!cuentaActiva) return;
-    const resultado = pagos.filter((p) => {
-      const fecha = new Date(p.fecha);
-      const matchDesde = !desde || fecha >= new Date(desde);
-      const matchHasta = !hasta || fecha <= new Date(`${hasta}T23:59:59`);
-      return matchDesde && matchHasta;
-    });
-    setFiltrados(resultado);
+    setFiltros({ desde: desde || undefined, hasta: hasta || undefined });
+    setPage(1);
   };
 
   if (!cuentaActiva) return null;
 
-  const listaMostrar = filtrados ?? pagos;
+  const progresoMes = cuenta?.metaCumplida ? 100 : cuenta?.progresoMes ?? 0;
+
+  const columns: TableColumn<Aporte>[] = [
+    { key: 'fechaRegistro', header: 'Fecha', render: (r) => formatDate(r.fechaRegistro) },
+    {
+      key: 'monto',
+      header: 'Monto',
+      numeric: true,
+      render: (r) => <span className="font-medium tabular-nums">{formatCurrency(r.monto, 'USD')}</span>,
+    },
+    {
+      key: 'comprobante',
+      header: 'Comprobante',
+      render: (r) => <span className="font-mono text-xs">{r.comprobante ?? '—'}</span>,
+    },
+    { key: 'estado', header: 'Estado', render: (r) => <StatusBadge status={r.estado} /> },
+  ];
 
   return (
     <div className="flex min-h-[calc(100dvh-10.5rem)] flex-col gap-3">
@@ -50,25 +76,23 @@ export function MisAhorrosView() {
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600">Meta mensual</p>
             <p className="mt-1 text-xl font-bold tabular-nums text-slate-900">
-              {formatCurrency(resumen.metaMensual)}
+              {formatCurrency(cuenta?.metaMensual ?? 0, 'USD')}
             </p>
           </div>
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Progreso del mes</p>
-            <p className="mt-1 text-xl font-bold tabular-nums text-emerald-700">
-              {formatCurrency(resumen.progresoMes)}
-            </p>
+            <p className="mt-1 text-xl font-bold tabular-nums text-emerald-700">{progresoMes}%</p>
           </div>
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Saldo disponible</p>
             <p className="mt-1 text-xl font-bold tabular-nums text-emerald-700">
-              {formatCurrency(resumen.saldoDisponible)}
+              {formatCurrency(cuenta?.saldoDisponible ?? 0, 'USD')}
             </p>
           </div>
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-600">Saldo pendiente</p>
             <p className="mt-1 text-xl font-bold tabular-nums text-amber-700">
-              {formatCurrency(resumen.saldoPendiente)}
+              {formatCurrency(cuenta?.saldoPendiente ?? 0, 'USD')}
             </p>
           </div>
         </div>
@@ -118,20 +142,44 @@ export function MisAhorrosView() {
 
       <section className="flex min-h-0 flex-1 flex-col">
         <SectionHeading
-          title={
-            cargando
-              ? 'Cargando pagos…'
-              : filtrados === null
-                ? 'Pagos registrados'
-                : `Pagos · ${filtrados.length} registro(s)`
-          }
+          title={cargando ? 'Cargando pagos…' : 'Pagos registrados'}
+          description={!cargando ? `${total} registro(s)` : undefined}
         />
         <div className="min-h-0 flex-1 overflow-auto">
-          <PaymentList
-            pagos={listaMostrar}
+          <Table
+            columns={columns}
+            data={aportes}
             emptyMessage="No hay pagos en el rango seleccionado."
           />
         </div>
+
+        {totalPages > 1 && (
+          <div className="mt-3 flex shrink-0 items-center justify-between gap-2">
+            <p className="text-xs text-slate-500">
+              Página {page} de {totalPages}
+            </p>
+            <div className="flex items-center gap-2">
+              <ActionButton
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1 || cargando}
+              >
+                Anterior
+              </ActionButton>
+              <ActionButton
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages || cargando}
+              >
+                Siguiente
+              </ActionButton>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );

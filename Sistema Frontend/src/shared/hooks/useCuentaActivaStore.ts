@@ -11,6 +11,8 @@ interface CuentaActivaState {
   seleccionarCuenta: (id: string) => void;
   limpiarCuenta: () => void;
   agregarCuenta: (cuenta: CuentaUsuario) => void;
+  /** Reemplaza la lista de cuentas (p. ej. tras cargarlas desde el backend). */
+  setCuentas: (cuentas: CuentaUsuario[]) => void;
   getCuentaActiva: () => CuentaUsuario | null;
 }
 
@@ -25,6 +27,14 @@ export const useCuentaActivaStore = create<CuentaActivaState>()(
         set((state) => ({
           cuentas: [...state.cuentas, cuenta],
           cuentaActivaId: cuenta.id,
+        })),
+      setCuentas: (cuentas) =>
+        set((state) => ({
+          cuentas,
+          cuentaActivaId:
+            state.cuentaActivaId && cuentas.some((c) => c.id === state.cuentaActivaId)
+              ? state.cuentaActivaId
+              : null,
         })),
       getCuentaActiva: () => {
         const { cuentaActivaId, cuentas } = get();

@@ -55,15 +55,23 @@ class ChangePasswordUseCase {
         if (!user.isActive) {
             throw new invalid_credentials_error_1.InvalidCredentialsError();
         }
-        const ok = await bcrypt.compare(input.currentPassword, user.passwordHash);
-        if (!ok) {
-            throw new invalid_credentials_error_1.InvalidCredentialsError('Contraseña actual incorrecta');
+        const tieneCurrentPassword = Boolean(input.currentPassword?.trim());
+        let pendingPasswordReset;
+        if (tieneCurrentPassword) {
+            const ok = await bcrypt.compare(input.currentPassword, user.passwordHash);
+            if (!ok) {
+                throw new invalid_credentials_error_1.InvalidCredentialsError('Contraseña actual incorrecta');
+            }
+            if (input.newPassword === input.currentPassword) {
+                throw new same_new_password_error_1.SameNewPasswordError();
+            }
+            pendingPasswordReset = false;
         }
-        if (input.newPassword === input.currentPassword) {
-            throw new same_new_password_error_1.SameNewPasswordError();
+        else {
+            pendingPasswordReset = true;
         }
         const passwordHash = await bcrypt.hash(input.newPassword, SALT_ROUNDS);
-        const updated = new user_entity_1.User(user.id, user.usuario, user.email, passwordHash, user.fullName, user.roleId, user.roles, user.isActive, user.cityId, user.cityName, user.maturityAt, user.phoneNumber, user.identification, false);
+        const updated = new user_entity_1.User(user.id, user.usuario, user.email, passwordHash, user.fullName, user.roleId, user.roles, user.isActive, user.cityId, user.cityName, user.maturityAt, user.phoneNumber, user.identification, pendingPasswordReset);
         await this.users.save(updated);
         await this.refreshRepo.revokeAllForUser(user.id);
     }

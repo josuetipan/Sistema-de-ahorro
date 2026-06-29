@@ -23,10 +23,21 @@ httpClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 
+/**
+ * Endpoints donde un 401 es un error de validación esperado (p. ej. contraseña
+ * actual incorrecta) y NO debe disparar el cierre de sesión global.
+ */
+const SKIP_AUTH_REDIRECT_ENDPOINTS = [API_CONFIG.endpoints.auth.resetPassword];
+
 httpClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    if (error.response?.status === 401 && !env.VITE_MOCK_AUTH) {
+    const requestUrl = error.config?.url ?? '';
+    const isSkippedEndpoint = SKIP_AUTH_REDIRECT_ENDPOINTS.some((endpoint) =>
+      requestUrl.includes(endpoint),
+    );
+
+    if (error.response?.status === 401 && !env.VITE_MOCK_AUTH && !isSkippedEndpoint) {
       const token = localStorage.getItem(TOKEN_KEY);
       if (isMockToken(token)) return Promise.reject(error);
       localStorage.removeItem(TOKEN_KEY);

@@ -3,8 +3,7 @@ import { ActionButton } from '@shared/ui/atoms/ActionButton';
 import { SectionCard } from '@shared/ui/molecules/SectionCard';
 import { NavIcon } from '@shared/ui/atoms/NavIcon';
 import { useToast } from '@shared/hooks/useToast';
-import { useAuth } from '@shared/hooks/useAuth';
-import { MOCK_CODIGO_INVITACION } from '@shared/data/ahorroMockData';
+import { useMiInvitacion } from '@features/cuentas/application/hooks/useMiInvitacion';
 
 function buildMensajeInvitacion(codigo: string, nombre?: string) {
   const enlace = `${window.location.origin}/registro?ref=${codigo}`;
@@ -23,13 +22,13 @@ Regístrate aquí: ${enlace}
 
 export function InvitarCuentaSection({ className = '' }: { className?: string }) {
   const toast = useToast();
-  const { user } = useAuth();
+  const { invitacion, cargando } = useMiInvitacion();
   const [copiado, setCopiado] = useState(false);
 
-  const codigo = MOCK_CODIGO_INVITACION;
+  const codigo = invitacion?.codigo ?? '';
 
   const copiarInvitacion = async () => {
-    const mensaje = buildMensajeInvitacion(codigo, user?.nombre);
+    const mensaje = buildMensajeInvitacion(codigo, invitacion?.titular);
 
     try {
       await navigator.clipboard.writeText(mensaje);
@@ -54,21 +53,21 @@ export function InvitarCuentaSection({ className = '' }: { className?: string })
           className="rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-4 text-center font-mono text-lg font-bold tracking-widest text-white"
           translate="no"
         >
-          {codigo}
+          {cargando ? 'Cargando…' : codigo || 'Sin código'}
         </p>
 
         <p className="text-center text-sm text-slate-500">
           Al copiar, se incluye un mensaje de invitación listo para enviar junto con tu código.
         </p>
 
-        <ActionButton type="button" fullWidth onClick={copiarInvitacion}>
+        <ActionButton type="button" fullWidth onClick={copiarInvitacion} disabled={!codigo}>
           <NavIcon name="transfer" size={16} />
           {copiado ? '¡Mensaje copiado!' : 'Copiar código'}
         </ActionButton>
 
-        {user && (
+        {invitacion && (
           <p className="text-center text-xs text-slate-400">
-            Código asociado a <strong className="text-slate-600">{user.nombre}</strong>
+            Código asociado a <strong className="text-slate-600">{invitacion.titular}</strong>
           </p>
         )}
       </div>

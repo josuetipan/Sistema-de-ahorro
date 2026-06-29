@@ -68,6 +68,20 @@ export class SaldoInsuficienteError extends Error {
   }
 }
 
+export class BannerNotFoundError extends Error {
+  constructor(bannerId: string) {
+    super(`No se encontró el banner: ${bannerId}`);
+    this.name = 'BannerNotFoundError';
+  }
+}
+
+export class InvitacionNotFoundError extends Error {
+  constructor() {
+    super('El usuario autenticado no tiene un código de invitación');
+    this.name = 'InvitacionNotFoundError';
+  }
+}
+
 export class CuentaConSaldoError extends Error {
   constructor() {
     super(

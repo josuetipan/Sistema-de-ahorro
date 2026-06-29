@@ -1,7 +1,8 @@
 import type { UseCase } from "../../../../shared/application/use-case.interface";
+import { type PaginatedResult } from "../../../../shared/application/pagination";
 import { type ListarSolicitudesFiltro, type SolicitudCuentaAdminItem, type SolicitudCuentaRepositoryPort } from '../../domain/ports/solicitud-cuenta.repository.port';
-export declare class ListarSolicitudesUseCase implements UseCase<ListarSolicitudesFiltro, SolicitudCuentaAdminItem[]> {
+export declare class ListarSolicitudesUseCase implements UseCase<ListarSolicitudesFiltro, PaginatedResult<SolicitudCuentaAdminItem>> {
     private readonly solicitudes;
     constructor(solicitudes: SolicitudCuentaRepositoryPort);
-    execute(filtro: ListarSolicitudesFiltro): Promise<SolicitudCuentaAdminItem[]>;
+    execute(filtro: ListarSolicitudesFiltro): Promise<PaginatedResult<SolicitudCuentaAdminItem>>;
 }

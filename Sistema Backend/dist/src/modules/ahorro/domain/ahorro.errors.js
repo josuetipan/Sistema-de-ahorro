@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CuentaConSaldoError = exports.SaldoInsuficienteError = exports.MetaConfigInvalidaError = exports.SolicitudYaResueltaError = exports.SolicitudCuentaNotFoundError = exports.ComprobanteAlreadyTakenError = exports.AporteNotFoundError = exports.AporteMesAlreadyExistsError = exports.SocioNotFoundError = exports.CuentaForbiddenError = exports.CuentaNotFoundError = void 0;
+exports.CuentaConSaldoError = exports.InvitacionNotFoundError = exports.BannerNotFoundError = exports.SaldoInsuficienteError = exports.MetaConfigInvalidaError = exports.SolicitudYaResueltaError = exports.SolicitudCuentaNotFoundError = exports.ComprobanteAlreadyTakenError = exports.AporteNotFoundError = exports.AporteMesAlreadyExistsError = exports.SocioNotFoundError = exports.CuentaForbiddenError = exports.CuentaNotFoundError = void 0;
 class CuentaNotFoundError extends Error {
     constructor(cuentaId) {
         super(`No se encontró la cuenta: ${cuentaId}`);
@@ -71,6 +71,20 @@ class SaldoInsuficienteError extends Error {
     }
 }
 exports.SaldoInsuficienteError = SaldoInsuficienteError;
+class BannerNotFoundError extends Error {
+    constructor(bannerId) {
+        super(`No se encontró el banner: ${bannerId}`);
+        this.name = 'BannerNotFoundError';
+    }
+}
+exports.BannerNotFoundError = BannerNotFoundError;
+class InvitacionNotFoundError extends Error {
+    constructor() {
+        super('El usuario autenticado no tiene un código de invitación');
+        this.name = 'InvitacionNotFoundError';
+    }
+}
+exports.InvitacionNotFoundError = InvitacionNotFoundError;
 class CuentaConSaldoError extends Error {
     constructor() {
         super('La cuenta tiene saldo; especifica una cuenta destino para transferir el saldo antes de eliminar');

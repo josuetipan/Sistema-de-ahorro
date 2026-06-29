@@ -25,7 +25,7 @@ export function CalendarioAhorroView() {
         variant="outline"
         size="sm"
         onClick={() => setAnio((y) => y + 1)}
-        disabled={anio >= new Date().getFullYear()}
+        disabled={anio >= 2100}
       >
         {anio + 1} →
       </ActionButton>

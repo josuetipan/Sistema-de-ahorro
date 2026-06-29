@@ -1,5 +1,11 @@
 import type { IAuthRepository } from '../../domain/auth.repository';
-import type { AuthSession, LoginInput, RegisterInput } from '../../domain/auth.entity';
+import type {
+  AuthSession,
+  LoginInput,
+  RegisterInput,
+  ResetPasswordInput,
+  ResetPasswordResult,
+} from '../../domain/auth.entity';
 import { findMockCredential, MOCK_TOKEN } from '../mocks/auth.mock';
 
 const delay = (ms = 500) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -39,5 +45,10 @@ export class AuthMockAdapter implements IAuthRepository {
 
   async refreshToken(): Promise<{ token: string }> {
     return { token: MOCK_TOKEN };
+  }
+
+  async resetPassword(_input: ResetPasswordInput): Promise<ResetPasswordResult> {
+    await delay();
+    return { success: true, message: 'Contraseña actualizada' };
   }
 }

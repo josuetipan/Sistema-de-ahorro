@@ -1,4 +1,5 @@
 import type { EstadoSolicitudCuenta, TipoSolicitudCuenta } from '@prisma/client';
+import type { PageSlice } from "../../../../shared/application/pagination";
 export declare const SOLICITUD_CUENTA_REPOSITORY: unique symbol;
 export interface SolicitudCuentaResumen {
     idSolicitudCuenta: string;
@@ -28,11 +29,13 @@ export interface CrearSolicitudInput {
 export interface ListarSolicitudesFiltro {
     estado?: EstadoSolicitudCuenta;
     tipo?: TipoSolicitudCuenta;
+    page: number;
+    limit: number;
 }
 export interface SolicitudCuentaRepositoryPort {
     create(input: CrearSolicitudInput): Promise<SolicitudCuentaResumen>;
     findById(solicitudId: string): Promise<SolicitudCuentaResumen | null>;
-    listForAdmin(filtro: ListarSolicitudesFiltro): Promise<SolicitudCuentaAdminItem[]>;
+    listForAdmin(filtro: ListarSolicitudesFiltro): Promise<PageSlice<SolicitudCuentaAdminItem>>;
     listByUserId(userId: string): Promise<SolicitudCuentaResumen[]>;
     rechazar(solicitudId: string, resueltoPor: string, observaciones?: string | null): Promise<SolicitudCuentaResumen>;
     aprobar(solicitudId: string, resueltoPor: string, observaciones?: string | null): Promise<SolicitudCuentaResumen>;

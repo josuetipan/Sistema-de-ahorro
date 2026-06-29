@@ -1,61 +1,57 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ActionButton } from '@shared/ui/atoms/ActionButton';
-import { Input } from '@shared/ui/atoms/Input';
-import { FormField } from '@shared/ui/molecules/FormField';
 import { useCuentaActiva } from '@shared/hooks/useCuentaActiva';
 import { useToast } from '@shared/hooks/useToast';
 import { ROUTES } from '@shared/config/routes';
-import { META_AHORRO_MENSUAL_DEFAULT, type CuentaUsuario } from '@shared/data/ahorroMockData';
-import { SocioCard } from '@features/ahorro/presentation/components/SocioCard';
-import { usePagosAhorro } from '@features/ahorro/application/hooks/usePagosAhorro';
-import { calcularResumenAhorro } from '@features/ahorro/domain/pago.rules';
-import { META_MENSUAL_OBLIGATORIA } from '@features/ahorro/domain/pago.entity';
+import type { CuentaUsuario } from '@shared/data/ahorroMockData';
+import { isAxiosError } from 'axios';
+import { useResumenAhorro } from '../../application/hooks/useResumenAhorro';
+import { useCrearCuenta } from '../../application/hooks/useCrearCuenta';
+import { cuentaResumenToCuentaUsuario } from '../../infrastructure/mappers/cuenta.mapper';
+import type { CrearCuentaInput, CuentaResumen } from '../../domain/cuenta.entity';
+import { CrearCuentaForm } from '../components/CrearCuentaForm';
+import { CuentaResumenCard } from '../components/CuentaResumenCard';
+import { Modal } from '@shared/ui/molecules/Modal';
+
+function mapearCuentas(cuentas: CuentaResumen[]): CuentaUsuario[] {
+  return cuentas.map((c, i) => cuentaResumenToCuentaUsuario(c, i));
+}
+
+function getCrearErrorMessage(error: unknown): string {
+  if (isAxiosError(error)) {
+    const msg = error.response?.data as { message?: string } | undefined;
+    if (msg?.message) return msg.message;
+  }
+  return 'No se pudo crear la cuenta. Inténtalo de nuevo.';
+}
 
 export function ElegirCuentaView() {
   const navigate = useNavigate();
   const toast = useToast();
-  const { cuentas, seleccionarCuenta, agregarCuenta, cuentaActivaId } = useCuentaActiva();
-  const { pagos, cargando } = usePagosAhorro();
+  const { seleccionarCuenta, setCuentas, cuentaActivaId } = useCuentaActiva();
+  const { resumen, cuentas, cargando, error, recargar } = useResumenAhorro();
+  const { crearCuenta, isSubmitting } = useCrearCuenta();
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const [nombreNueva, setNombreNueva] = useState('');
-
-  const resumenesPorCuenta = useMemo(() => {
-    const map = new Map<string, ReturnType<typeof calcularResumenAhorro>>();
-    for (const cuenta of cuentas) {
-      const pagosCuenta = pagos.filter((p) => p.cuentaId === cuenta.id);
-      map.set(cuenta.id, calcularResumenAhorro(pagosCuenta));
-    }
-    return map;
-  }, [cuentas, pagos]);
 
   const entrarACuenta = (id: string) => {
+    setCuentas(mapearCuentas(cuentas));
     seleccionarCuenta(id);
     navigate(ROUTES.DASHBOARD);
   };
 
-  const crearCuenta = () => {
-    if (!nombreNueva.trim()) {
-      toast.error('Escribe un nombre para tu cuenta.');
-      return;
+  const onCrearCuenta = async (input: CrearCuentaInput) => {
+    try {
+      const creada = await crearCuenta(input);
+      toast.success(`Cuenta "${creada.nombre}" creada correctamente.`);
+      setMostrarFormulario(false);
+      const actualizado = await recargar();
+      setCuentas(mapearCuentas(actualizado?.cuentas ?? cuentas));
+      seleccionarCuenta(creada.idCuenta);
+      navigate(ROUTES.DASHBOARD);
+    } catch (err) {
+      toast.error(getCrearErrorMessage(err));
     }
-    const nueva: CuentaUsuario = {
-      id: `cta-${Date.now()}`,
-      nombre: nombreNueva.trim(),
-      numeroCuenta: `AH-2026-${String(Math.floor(Math.random() * 900000) + 100000)}`,
-      saldo: 0,
-      totalAhorrado: 0,
-      metaMensual: META_AHORRO_MENSUAL_DEFAULT,
-      color: 'emerald',
-      icono: 'savings',
-      fechaApertura: new Date().toISOString().split('T')[0],
-      estado: 'activa',
-    };
-    agregarCuenta(nueva);
-    toast.success(`Cuenta "${nueva.nombre}" creada.`);
-    setNombreNueva('');
-    setMostrarFormulario(false);
-    navigate(ROUTES.DASHBOARD);
   };
 
   return (
@@ -65,22 +61,29 @@ export function ElegirCuentaView() {
           ¿Con qué cuenta quieres ahorrar hoy?
         </h1>
         <p className="mt-2 text-sm text-slate-500 md:text-base">
-          Meta mensual obligatoria de {META_MENSUAL_OBLIGATORIA} USD por socio.
-          Solo los pagos verificados por el contador suman al saldo disponible.
+          {resumen
+            ? `Meta mensual de ${resumen.metaMensual} USD. Solo los aportes verificados suman al saldo disponible.`
+            : 'Cargando tu información de ahorro…'}
         </p>
       </div>
 
       {cargando ? (
-        <p className="py-12 text-center text-sm text-slate-500">Cargando cuentas y pagos…</p>
+        <p className="py-12 text-center text-sm text-slate-500">Cargando tus cuentas…</p>
+      ) : error ? (
+        <div className="flex flex-col items-center gap-3 py-12 text-center">
+          <p className="text-sm text-red-600">{error}</p>
+          <ActionButton type="button" variant="outline" onClick={() => void recargar()}>
+            Reintentar
+          </ActionButton>
+        </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {cuentas.map((cuenta) => (
-            <SocioCard
-              key={cuenta.id}
+            <CuentaResumenCard
+              key={cuenta.cuentaId}
               cuenta={cuenta}
-              resumen={resumenesPorCuenta.get(cuenta.id) ?? calcularResumenAhorro([])}
-              esActiva={cuenta.id === cuentaActivaId}
-              onSelect={() => entrarACuenta(cuenta.id)}
+              esActiva={cuenta.cuentaId === cuentaActivaId}
+              onSelect={() => entrarACuenta(cuenta.cuentaId)}
             />
           ))}
 
@@ -97,35 +100,20 @@ export function ElegirCuentaView() {
         </div>
       )}
 
-      {mostrarFormulario && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-slate-900">Nueva cuenta de ahorro</h3>
-          <p className="mt-1 text-sm text-slate-500">
-            Dale un nombre para identificar tu objetivo de ahorro.
-          </p>
-          <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end">
-            <div className="flex-1">
-              <FormField label="Nombre de la cuenta" htmlFor="nombre-cuenta" required>
-                <Input
-                  id="nombre-cuenta"
-                  placeholder="Ej. Ahorro para casa, Educación…"
-                  value={nombreNueva}
-                  onChange={(e) => setNombreNueva(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && crearCuenta()}
-                />
-              </FormField>
-            </div>
-            <div className="flex gap-2">
-              <ActionButton type="button" variant="outline" onClick={() => setMostrarFormulario(false)}>
-                Cancelar
-              </ActionButton>
-              <ActionButton type="button" onClick={crearCuenta}>
-                Crear y abrir
-              </ActionButton>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={mostrarFormulario}
+        onClose={() => setMostrarFormulario(false)}
+        title="Nueva cuenta de ahorro"
+      >
+        <p className="mb-4 text-sm text-slate-500">
+          Personaliza tu nueva cuenta para identificar tu objetivo de ahorro.
+        </p>
+        <CrearCuentaForm
+          onSubmit={onCrearCuenta}
+          onCancel={() => setMostrarFormulario(false)}
+          isSubmitting={isSubmitting}
+        />
+      </Modal>
     </div>
   );
 }

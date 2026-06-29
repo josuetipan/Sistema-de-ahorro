@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   InternalServerErrorException,
@@ -12,9 +13,19 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
+import {
+  IMAGE_MIME_TYPES,
+  MAX_UPLOAD_BYTES,
+  assertAllowedMime,
+  toBase64DataUri,
+  type UploadedFileLike,
+} from '@shared/presentation/uploaded-file';
 import type {
   EstadoAporte,
   EstadoSolicitudCuenta,
@@ -29,6 +40,7 @@ import {
 } from '../../../auth/infrastructure/auth/current-user.decorator';
 import {
   AporteNotFoundError,
+  BannerNotFoundError,
   CuentaConSaldoError,
   CuentaNotFoundError,
   MetaConfigInvalidaError,
@@ -46,10 +58,17 @@ import { ListarSociosAhorroUseCase } from '../../application/use-cases/listar-so
 import { GetSocioAhorroUseCase } from '../../application/use-cases/get-socio-ahorro.use-case';
 import { ListarSolicitudesUseCase } from '../../application/use-cases/listar-solicitudes.use-case';
 import { ResolverSolicitudUseCase } from '../../application/use-cases/resolver-solicitud.use-case';
+import { ListarBannersAdminUseCase } from '../../application/use-cases/listar-banners-admin.use-case';
+import { CrearBannerUseCase } from '../../application/use-cases/crear-banner.use-case';
+import { ActualizarBannerUseCase } from '../../application/use-cases/actualizar-banner.use-case';
+import { EliminarBannerUseCase } from '../../application/use-cases/eliminar-banner.use-case';
 import { VerificarAporteHttpDto } from '../dto/verificar-aporte.http.dto';
 import { ActualizarMetaConfigHttpDto } from '../dto/actualizar-meta-config.http.dto';
 import { ResolverSolicitudHttpDto } from '../dto/resolver-solicitud.http.dto';
 import { CrearCuentaHttpDto } from '../dto/crear-cuenta.http.dto';
+import { parsePagination } from '@shared/presentation/parse-pagination';
+import { CrearBannerHttpDto } from '../dto/crear-banner.http.dto';
+import { ActualizarBannerHttpDto } from '../dto/actualizar-banner.http.dto';
 
 const ESTADOS_APORTE: EstadoAporte[] = [
   'pendiente',
@@ -75,6 +94,10 @@ export class AdminAhorroController {
     private readonly getSocio: GetSocioAhorroUseCase,
     private readonly listarSolicitudes: ListarSolicitudesUseCase,
     private readonly resolverSolicitud: ResolverSolicitudUseCase,
+    private readonly listarBanners: ListarBannersAdminUseCase,
+    private readonly crearBanner: CrearBannerUseCase,
+    private readonly actualizarBanner: ActualizarBannerUseCase,
+    private readonly eliminarBanner: EliminarBannerUseCase,
   ) {}
 
   @Post('socios/:socioId/cuentas')
@@ -102,6 +125,8 @@ export class AdminAhorroController {
     @Query('estado') estado?: string,
     @Query('mes') mes?: string,
     @Query('cuentaId') cuentaId?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
     if (estado && !ESTADOS_APORTE.includes(estado as EstadoAporte)) {
       throw new BadRequestException(
@@ -111,10 +136,13 @@ export class AdminAhorroController {
     if (mes && !/^\d{4}-(0[1-9]|1[0-2])$/.test(mes)) {
       throw new BadRequestException('mes debe tener el formato YYYY-MM');
     }
+    const pagination = parsePagination(page, limit);
     return this.listarAportes.execute({
       estado: estado as EstadoAporte | undefined,
       mes,
       cuentaId,
+      page: pagination.page,
+      limit: pagination.limit,
     });
   }
 
@@ -166,8 +194,12 @@ export class AdminAhorroController {
   }
 
   @Get('socios')
-  async socios() {
-    return this.listarSocios.execute();
+  async socios(@Query('page') page?: string, @Query('limit') limit?: string) {
+    const pagination = parsePagination(page, limit);
+    return this.listarSocios.execute({
+      page: pagination.page,
+      limit: pagination.limit,
+    });
   }
 
   @Get('socios/:socioId')
@@ -183,10 +215,15 @@ export class AdminAhorroController {
   async solicitudes(
     @Query('estado') estado?: string,
     @Query('tipo') tipo?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
+    const pagination = parsePagination(page, limit);
     return this.listarSolicitudes.execute({
       estado: estado as EstadoSolicitudCuenta | undefined,
       tipo: tipo as TipoSolicitudCuenta | undefined,
+      page: pagination.page,
+      limit: pagination.limit,
     });
   }
 
@@ -209,12 +246,82 @@ export class AdminAhorroController {
     }
   }
 
+  @Get('banners')
+  async banners() {
+    return this.listarBanners.execute();
+  }
+
+  @Post('banners')
+  @HttpCode(201)
+  @UseInterceptors(
+    FileInterceptor('imagen', { limits: { fileSize: MAX_UPLOAD_BYTES } }),
+  )
+  async crearBannerEndpoint(
+    @UploadedFile() imagen: UploadedFileLike | undefined,
+    @Body() body: CrearBannerHttpDto,
+  ) {
+    if (!imagen) {
+      throw new BadRequestException('La imagen (campo imagen) es requerida');
+    }
+    assertAllowedMime(imagen, IMAGE_MIME_TYPES);
+    return this.crearBanner.execute({
+      titulo: body.titulo,
+      subtitulo: body.subtitulo ?? null,
+      imagenUrl: toBase64DataUri(imagen),
+      orden: body.orden,
+      activo: body.activo,
+    });
+  }
+
+  @Patch('banners/:bannerId')
+  @HttpCode(200)
+  @UseInterceptors(
+    FileInterceptor('imagen', { limits: { fileSize: MAX_UPLOAD_BYTES } }),
+  )
+  async actualizarBannerEndpoint(
+    @Param('bannerId', ParseUUIDPipe) bannerId: string,
+    @UploadedFile() imagen: UploadedFileLike | undefined,
+    @Body() body: ActualizarBannerHttpDto,
+  ) {
+    let imagenUrl: string | undefined;
+    if (imagen) {
+      assertAllowedMime(imagen, IMAGE_MIME_TYPES);
+      imagenUrl = toBase64DataUri(imagen);
+    }
+    try {
+      return await this.actualizarBanner.execute({
+        bannerId,
+        titulo: body.titulo,
+        subtitulo: body.subtitulo,
+        imagenUrl,
+        orden: body.orden,
+        activo: body.activo,
+      });
+    } catch (err) {
+      throw this.mapError(err);
+    }
+  }
+
+  @Delete('banners/:bannerId')
+  @HttpCode(200)
+  async eliminarBannerEndpoint(
+    @Param('bannerId', ParseUUIDPipe) bannerId: string,
+  ) {
+    try {
+      await this.eliminarBanner.execute(bannerId);
+      return { success: true };
+    } catch (err) {
+      throw this.mapError(err);
+    }
+  }
+
   private mapError(err: unknown): Error {
     if (
       err instanceof CuentaNotFoundError ||
       err instanceof AporteNotFoundError ||
       err instanceof SocioNotFoundError ||
-      err instanceof SolicitudCuentaNotFoundError
+      err instanceof SolicitudCuentaNotFoundError ||
+      err instanceof BannerNotFoundError
     ) {
       return new NotFoundException(err.message);
     }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
+import type { PageSlice } from '@shared/application/pagination';
 import {
   CuentaConSaldoError,
   SaldoInsuficienteError,
@@ -64,30 +65,40 @@ export class PrismaSolicitudCuentaRepository
 
   async listForAdmin(
     filtro: ListarSolicitudesFiltro,
-  ): Promise<SolicitudCuentaAdminItem[]> {
-    const rows = await this.prisma.solicitudCuenta.findMany({
-      where: { estado: filtro.estado, tipo: filtro.tipo },
-      include: {
-        cuentaOrigen: {
-          select: {
-            numeroCuenta: true,
-            socio: {
-              select: {
-                id_socio: true,
-                user: { select: { full_name: true } },
+  ): Promise<PageSlice<SolicitudCuentaAdminItem>> {
+    const where: Prisma.SolicitudCuentaWhereInput = {
+      estado: filtro.estado,
+      tipo: filtro.tipo,
+    };
+    const [rows, total] = await this.prisma.$transaction([
+      this.prisma.solicitudCuenta.findMany({
+        where,
+        include: {
+          cuentaOrigen: {
+            select: {
+              numeroCuenta: true,
+              socio: {
+                select: {
+                  id_socio: true,
+                  user: { select: { full_name: true } },
+                },
               },
             },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-    return rows.map((row) => ({
+        orderBy: { createdAt: 'desc' },
+        skip: (filtro.page - 1) * filtro.limit,
+        take: filtro.limit,
+      }),
+      this.prisma.solicitudCuenta.count({ where }),
+    ]);
+    const items = rows.map((row) => ({
       ...toResumen(row),
       numeroCuentaOrigen: row.cuentaOrigen.numeroCuenta,
       socioId: row.cuentaOrigen.socio.id_socio,
       socioNombre: row.cuentaOrigen.socio.user.full_name,
     }));
+    return { items, total };
   }
 
   async listByUserId(userId: string): Promise<SolicitudCuentaResumen[]> {

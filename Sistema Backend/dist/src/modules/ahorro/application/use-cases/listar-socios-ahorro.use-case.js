@@ -14,14 +14,19 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ListarSociosAhorroUseCase = void 0;
 const common_1 = require("@nestjs/common");
+const pagination_1 = require("../../../../shared/application/pagination");
 const cuenta_repository_port_1 = require("../../domain/ports/cuenta.repository.port");
 let ListarSociosAhorroUseCase = class ListarSociosAhorroUseCase {
     cuentas;
     constructor(cuentas) {
         this.cuentas = cuentas;
     }
-    async execute() {
-        return this.cuentas.listSociosCustomer();
+    async execute(input) {
+        const { items, total } = await this.cuentas.listSociosCustomer({
+            page: input.page,
+            limit: input.limit,
+        });
+        return (0, pagination_1.paginate)(items, total, input.page, input.limit);
     }
 };
 exports.ListarSociosAhorroUseCase = ListarSociosAhorroUseCase;

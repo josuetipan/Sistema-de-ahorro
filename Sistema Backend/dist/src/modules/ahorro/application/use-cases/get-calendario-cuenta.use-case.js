@@ -54,7 +54,7 @@ let GetCalendarioCuentaUseCase = class GetCalendarioCuentaUseCase {
             meses.push({
                 mes: mesKey,
                 numeroMes: m,
-                metaMensual: aporte?.metaMensual ?? meta.metaMensual,
+                metaMensual: meta.metaMensual,
                 metaMinima: meta.metaMinima,
                 metaMaxima: meta.metaMaxima,
                 montoAportado: aporte?.monto ?? 0,

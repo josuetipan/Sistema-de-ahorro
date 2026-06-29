@@ -35,10 +35,6 @@ let RegistrarAporteUseCase = class RegistrarAporteUseCase {
         if (ownership.userId !== input.userId) {
             throw new ahorro_errors_1.CuentaForbiddenError();
         }
-        const yaExiste = await this.aportes.existsByCuentaAndMes(input.cuentaId, input.mes);
-        if (yaExiste) {
-            throw new ahorro_errors_1.AporteMesAlreadyExistsError(input.mes);
-        }
         const comprobanteUsado = await this.aportes.existsByComprobante(input.comprobante);
         if (comprobanteUsado) {
             throw new ahorro_errors_1.ComprobanteAlreadyTakenError();
