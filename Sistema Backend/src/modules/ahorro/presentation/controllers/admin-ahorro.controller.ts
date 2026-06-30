@@ -27,7 +27,9 @@ import {
   type UploadedFileLike,
 } from '@shared/presentation/uploaded-file';
 import type {
+  EstadoCuenta,
   EstadoAporte,
+  EstadoSocio,
   EstadoSolicitudCuenta,
   TipoSolicitudCuenta,
 } from '@prisma/client';
@@ -77,6 +79,18 @@ const ESTADOS_APORTE: EstadoAporte[] = [
   'atrasado',
   'rechazado',
 ];
+const ESTADOS_SOCIO: EstadoSocio[] = ['activo', 'inactivo', 'pendiente'];
+const ESTADOS_CUENTA: EstadoCuenta[] = [
+  'activa',
+  'inactiva',
+  'bloqueada',
+  'cerrada',
+];
+
+function cleanQueryParam(value?: string): string | undefined {
+  const clean = value?.trim();
+  return clean === '' ? undefined : clean;
+}
 
 @Controller('admin/ahorro')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -194,11 +208,41 @@ export class AdminAhorroController {
   }
 
   @Get('socios')
-  async socios(@Query('page') page?: string, @Query('limit') limit?: string) {
+  async socios(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('q') q?: string,
+    @Query('estado') estado?: string,
+    @Query('codigo') codigo?: string,
+    @Query('nombre') nombre?: string,
+    @Query('email') email?: string,
+    @Query('identification') identification?: string,
+    @Query('cuentaEstado') cuentaEstado?: string,
+  ) {
+    if (estado && !ESTADOS_SOCIO.includes(estado as EstadoSocio)) {
+      throw new BadRequestException(
+        `estado debe ser uno de: ${ESTADOS_SOCIO.join(', ')}`,
+      );
+    }
+    if (
+      cuentaEstado &&
+      !ESTADOS_CUENTA.includes(cuentaEstado as EstadoCuenta)
+    ) {
+      throw new BadRequestException(
+        `cuentaEstado debe ser uno de: ${ESTADOS_CUENTA.join(', ')}`,
+      );
+    }
     const pagination = parsePagination(page, limit);
     return this.listarSocios.execute({
       page: pagination.page,
       limit: pagination.limit,
+      q: cleanQueryParam(q),
+      estado: estado as EstadoSocio | undefined,
+      codigo: cleanQueryParam(codigo),
+      nombre: cleanQueryParam(nombre),
+      email: cleanQueryParam(email),
+      identification: cleanQueryParam(identification),
+      cuentaEstado: cuentaEstado as EstadoCuenta | undefined,
     });
   }
 

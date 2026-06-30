@@ -7,6 +7,7 @@ import type {
   CuentaOwnership,
   CuentaRepositoryPort,
   CuentaResumen,
+  ListSociosCustomerParams,
   SocioAhorroResumen,
 } from '../../../domain/ports/cuenta.repository.port';
 
@@ -136,13 +137,86 @@ export class PrismaCuentaRepository implements CuentaRepositoryPort {
     return row ? toResumen(row) : null;
   }
 
-  async listSociosCustomer(params: {
-    page: number;
-    limit: number;
-  }): Promise<PageSlice<SocioAhorroResumen>> {
+  async listSociosCustomer(
+    params: ListSociosCustomerParams,
+  ): Promise<PageSlice<SocioAhorroResumen>> {
     const where: Prisma.SocioWhereInput = {
       user: { role: { code_role: 'CUSTOMER' } },
     };
+
+    if (params.estado) {
+      where.estado = params.estado;
+    }
+
+    if (params.codigo) {
+      where.codigo = { contains: params.codigo, mode: 'insensitive' };
+    }
+
+    if (params.cuentaEstado) {
+      where.cuentas = { some: { estado: params.cuentaEstado } };
+    }
+
+    const userFilters: Prisma.UserWhereInput[] = [];
+    if (params.nombre) {
+      userFilters.push({
+        full_name: { contains: params.nombre, mode: 'insensitive' },
+      });
+    }
+    if (params.email) {
+      userFilters.push({
+        email: { contains: params.email, mode: 'insensitive' },
+      });
+    }
+    if (params.identification) {
+      userFilters.push({
+        identification: {
+          contains: params.identification,
+          mode: 'insensitive',
+        },
+      });
+    }
+
+    const search = params.q;
+    if (search) {
+      where.OR = [
+        { codigo: { contains: search, mode: 'insensitive' } },
+        { user: { full_name: { contains: search, mode: 'insensitive' } } },
+        { user: { email: { contains: search, mode: 'insensitive' } } },
+        {
+          user: {
+            identification: { contains: search, mode: 'insensitive' },
+          },
+        },
+        {
+          user: {
+            phone_number: { contains: search, mode: 'insensitive' },
+          },
+        },
+        {
+          cuentas: {
+            some: {
+              OR: [
+                {
+                  numeroCuenta: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
+                },
+                { nombre: { contains: search, mode: 'insensitive' } },
+              ],
+            },
+          },
+        },
+      ];
+    }
+
+    if (userFilters.length > 0) {
+      where.user = {
+        role: { code_role: 'CUSTOMER' },
+        AND: userFilters,
+      };
+    }
+
     const [socios, total] = await this.prisma.$transaction([
       this.prisma.socio.findMany({
         where,

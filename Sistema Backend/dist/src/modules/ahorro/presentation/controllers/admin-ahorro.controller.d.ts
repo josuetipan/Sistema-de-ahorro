@@ -40,7 +40,7 @@ export declare class AdminAhorroController {
     verificar(user: AuthUserPayload, aporteId: string, body: VerificarAporteHttpDto): Promise<import("../../domain/ports/aporte.repository.port").AporteResumen>;
     meta(): Promise<import("../../domain/ports/meta-config.repository.port").MetaConfig>;
     actualizarMeta(body: ActualizarMetaConfigHttpDto): Promise<import("../../domain/ports/meta-config.repository.port").MetaConfig>;
-    socios(page?: string, limit?: string): Promise<import("../../../../shared/application/pagination").PaginatedResult<import("../../domain/ports/cuenta.repository.port").SocioAhorroResumen>>;
+    socios(page?: string, limit?: string, q?: string, estado?: string, codigo?: string, nombre?: string, email?: string, identification?: string, cuentaEstado?: string): Promise<import("../../../../shared/application/pagination").PaginatedResult<import("../../domain/ports/cuenta.repository.port").SocioAhorroResumen>>;
     socio(socioId: string): Promise<import("../../domain/ports/cuenta.repository.port").SocioAhorroResumen>;
     solicitudes(estado?: string, tipo?: string, page?: string, limit?: string): Promise<import("../../../../shared/application/pagination").PaginatedResult<import("../../domain/ports/solicitud-cuenta.repository.port").SolicitudCuentaAdminItem>>;
     resolver(user: AuthUserPayload, solicitudId: string, body: ResolverSolicitudHttpDto): Promise<import("../../domain/ports/solicitud-cuenta.repository.port").SolicitudCuentaResumen>;

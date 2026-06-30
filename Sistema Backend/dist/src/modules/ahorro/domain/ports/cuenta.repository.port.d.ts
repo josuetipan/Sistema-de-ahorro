@@ -1,4 +1,5 @@
 import type { PageSlice } from "../../../../shared/application/pagination";
+import type { EstadoCuenta, EstadoSocio } from '@prisma/client';
 export declare const CUENTA_REPOSITORY: unique symbol;
 export interface CuentaResumen {
     idCuenta: string;
@@ -44,6 +45,17 @@ export interface SocioAhorroResumen {
     cantidadCuentas: number;
     cuentas: CuentaResumen[];
 }
+export interface ListSociosCustomerParams {
+    page: number;
+    limit: number;
+    q?: string;
+    estado?: EstadoSocio;
+    codigo?: string;
+    nombre?: string;
+    email?: string;
+    identification?: string;
+    cuentaEstado?: EstadoCuenta;
+}
 export interface CuentaRepositoryPort {
     socioExists(socioId: string): Promise<boolean>;
     create(input: CrearCuentaInput): Promise<CuentaResumen>;
@@ -51,9 +63,6 @@ export interface CuentaRepositoryPort {
     findSocioIdByUserId(userId: string): Promise<string | null>;
     findOwnership(cuentaId: string): Promise<CuentaOwnership | null>;
     findResumenById(cuentaId: string): Promise<CuentaResumen | null>;
-    listSociosCustomer(params: {
-        page: number;
-        limit: number;
-    }): Promise<PageSlice<SocioAhorroResumen>>;
+    listSociosCustomer(params: ListSociosCustomerParams): Promise<PageSlice<SocioAhorroResumen>>;
     getSocioCustomer(socioId: string): Promise<SocioAhorroResumen | null>;
 }
