@@ -137,8 +137,7 @@ export class AuthController {
   }
 
   @Post('reset-password')
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.CUSTOMER)
+  @UseGuards(AuthGuard('jwt'))
   @HttpCode(200)
   async resetPassword(
     @CurrentUser() caller: AuthUserPayload,

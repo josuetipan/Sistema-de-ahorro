@@ -15,9 +15,14 @@ export const loginSchema = z.object({
 
 export const registerSchema = z
   .object({
-    nombre: z.string().min(2, 'Nombre demasiado corto'),
+    fullName: z.string().min(3, 'Ingresa el nombre completo'),
+    identification: z
+      .string()
+      .min(10, 'La identificacion debe tener al menos 10 digitos')
+      .max(13, 'La identificacion no puede exceder 13 caracteres'),
     email: emailSchema,
-    password: passwordSchema,
+    phoneNumber: z.string().min(7, 'Ingresa un telefono valido'),
+    password: z.string().min(6, 'La contrasena debe tener al menos 6 caracteres'),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {

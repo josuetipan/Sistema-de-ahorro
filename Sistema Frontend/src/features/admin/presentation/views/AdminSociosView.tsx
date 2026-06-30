@@ -9,10 +9,10 @@ import { Table, type TableColumn } from '@shared/ui/molecules/Table';
 import { TableActionButton, TableActions } from '@shared/ui/molecules/TableActions';
 import { formatCurrency, formatDate, formatNumber } from '@shared/lib/formatters';
 import {
+  type CuentaSocioAdmin,
   type EstadoCuentaAhorroAdmin,
   type EstadoSocioAdmin,
   type SocioAhorroAdmin,
-  type CuentaSocioAdmin,
 } from '../../infrastructure/api/admin-ahorro.api';
 import { useSociosAhorroAdmin } from '../../application/hooks/useSociosAhorroAdmin';
 
@@ -286,7 +286,7 @@ export function AdminSociosView() {
 
       <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
         <p className="text-slate-600">
-          Pagina {formatNumber(meta.page)} de {formatNumber(meta.totalPages)} · limite {formatNumber(meta.limit)}
+          Pagina {formatNumber(meta.page)} de {formatNumber(meta.totalPages)} - limite {formatNumber(meta.limit)}
         </p>
         <div className="flex items-center gap-2">
           <ActionButton
@@ -321,7 +321,7 @@ export function AdminSociosView() {
             <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
               <p className="font-semibold text-slate-900">{seleccionado.fullName}</p>
               <p className="mt-1 text-sm text-slate-600">
-                {seleccionado.email} · {seleccionado.identification}
+                {seleccionado.email} - {seleccionado.identification}
               </p>
               <p className="mt-2 text-sm text-slate-600">
                 Total ahorrado: <strong>{formatCurrency(seleccionado.totalAhorrado, 'USD')}</strong>

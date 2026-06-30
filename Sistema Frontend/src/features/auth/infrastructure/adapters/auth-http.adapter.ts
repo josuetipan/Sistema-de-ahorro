@@ -16,8 +16,8 @@ export class AuthHttpAdapter implements IAuthRepository {
   }
 
   async register(input: RegisterInput): Promise<AuthSession> {
-    const response = await authApi.postRegister(input);
-    return toAuthSession(response);
+    void input;
+    throw new Error('El registro usa el endpoint publico de perfil y no inicia sesion automaticamente.');
   }
 
   async logout(): Promise<void> {

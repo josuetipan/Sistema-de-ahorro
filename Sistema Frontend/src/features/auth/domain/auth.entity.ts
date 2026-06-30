@@ -3,6 +3,8 @@ export type { Rol, Usuario } from '@entities/usuario/model';
 export interface AuthSession {
   user: import('@entities/usuario/model').Usuario;
   token: string;
+  refreshToken: string;
+  expiresIn?: number;
 }
 
 export interface LoginInput {
