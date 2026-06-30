@@ -68,8 +68,8 @@ let PrismaAporteRepository = class PrismaAporteRepository {
         this.prisma = prisma;
     }
     async existsByCuentaAndMes(cuentaId, mes) {
-        const row = await this.prisma.aporteMensual.findUnique({
-            where: { cuenta_id_mes: { cuenta_id: cuentaId, mes } },
+        const row = await this.prisma.aporteMensual.findFirst({
+            where: { cuenta_id: cuentaId, mes },
             select: { id_aporte_mensual: true },
         });
         return row !== null;

@@ -2,14 +2,21 @@ import { NavIcon } from '@shared/ui/atoms/NavIcon';
 import { formatCurrency } from '@shared/lib/formatters';
 import { useCuentaActiva } from '@shared/hooks/useCuentaActiva';
 import { usePagosAhorro } from '@features/ahorro/application/hooks/usePagosAhorro';
+import { useMetaAhorro } from '@features/ahorro/application/hooks/useMetaAhorro';
 
 export function MetaAhorroIndicador({ variant = 'default' }: { variant?: 'default' | 'toolbar' }) {
   const { cuentaActiva } = useCuentaActiva();
   const { resumen } = usePagosAhorro({ cuentaId: cuentaActiva?.id });
+  const { meta: configuracionMeta } = useMetaAhorro();
 
   if (!cuentaActiva) return null;
 
-  const { metaMensual, progresoMes, progresoPorcentaje, metaCumplida } = resumen;
+  const metaMensual = configuracionMeta?.metaMensual ?? resumen.metaMensual;
+  const progresoMes = resumen.progresoMes;
+  const progresoPorcentaje = metaMensual > 0
+    ? Math.min(Math.round((progresoMes / metaMensual) * 100), 100)
+    : 0;
+  const metaCumplida = metaMensual > 0 && progresoMes >= metaMensual;
   const enToolbar = variant === 'toolbar';
 
   return (

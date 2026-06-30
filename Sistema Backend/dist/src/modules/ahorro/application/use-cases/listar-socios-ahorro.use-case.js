@@ -25,6 +25,13 @@ let ListarSociosAhorroUseCase = class ListarSociosAhorroUseCase {
         const { items, total } = await this.cuentas.listSociosCustomer({
             page: input.page,
             limit: input.limit,
+            q: input.q,
+            estado: input.estado,
+            codigo: input.codigo,
+            nombre: input.nombre,
+            email: input.email,
+            identification: input.identification,
+            cuentaEstado: input.cuentaEstado,
         });
         return (0, pagination_1.paginate)(items, total, input.page, input.limit);
     }

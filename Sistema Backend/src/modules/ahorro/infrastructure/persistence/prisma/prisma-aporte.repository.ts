@@ -78,8 +78,8 @@ export class PrismaAporteRepository implements AporteRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async existsByCuentaAndMes(cuentaId: string, mes: string): Promise<boolean> {
-    const row = await this.prisma.aporteMensual.findUnique({
-      where: { cuenta_id_mes: { cuenta_id: cuentaId, mes } },
+    const row = await this.prisma.aporteMensual.findFirst({
+      where: { cuenta_id: cuentaId, mes },
       select: { id_aporte_mensual: true },
     });
     return row !== null;

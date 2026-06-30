@@ -50,6 +50,17 @@ const ESTADOS_APORTE = [
     'atrasado',
     'rechazado',
 ];
+const ESTADOS_SOCIO = ['activo', 'inactivo', 'pendiente'];
+const ESTADOS_CUENTA = [
+    'activa',
+    'inactiva',
+    'bloqueada',
+    'cerrada',
+];
+function cleanQueryParam(value) {
+    const clean = value?.trim();
+    return clean === '' ? undefined : clean;
+}
 let AdminAhorroController = AdminAhorroController_1 = class AdminAhorroController {
     crearCuenta;
     listarAportes;
@@ -144,11 +155,25 @@ let AdminAhorroController = AdminAhorroController_1 = class AdminAhorroControlle
             throw this.mapError(err);
         }
     }
-    async socios(page, limit) {
+    async socios(page, limit, q, estado, codigo, nombre, email, identification, cuentaEstado) {
+        if (estado && !ESTADOS_SOCIO.includes(estado)) {
+            throw new common_1.BadRequestException(`estado debe ser uno de: ${ESTADOS_SOCIO.join(', ')}`);
+        }
+        if (cuentaEstado &&
+            !ESTADOS_CUENTA.includes(cuentaEstado)) {
+            throw new common_1.BadRequestException(`cuentaEstado debe ser uno de: ${ESTADOS_CUENTA.join(', ')}`);
+        }
         const pagination = (0, parse_pagination_1.parsePagination)(page, limit);
         return this.listarSocios.execute({
             page: pagination.page,
             limit: pagination.limit,
+            q: cleanQueryParam(q),
+            estado: estado,
+            codigo: cleanQueryParam(codigo),
+            nombre: cleanQueryParam(nombre),
+            email: cleanQueryParam(email),
+            identification: cleanQueryParam(identification),
+            cuentaEstado: cuentaEstado,
         });
     }
     async socio(socioId) {
@@ -293,8 +318,15 @@ __decorate([
     (0, common_1.Get)('socios'),
     __param(0, (0, common_1.Query)('page')),
     __param(1, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Query)('q')),
+    __param(3, (0, common_1.Query)('estado')),
+    __param(4, (0, common_1.Query)('codigo')),
+    __param(5, (0, common_1.Query)('nombre')),
+    __param(6, (0, common_1.Query)('email')),
+    __param(7, (0, common_1.Query)('identification')),
+    __param(8, (0, common_1.Query)('cuentaEstado')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], AdminAhorroController.prototype, "socios", null);
 __decorate([

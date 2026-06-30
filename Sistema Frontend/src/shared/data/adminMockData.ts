@@ -89,6 +89,26 @@ export interface MovimientoAdmin {
   referencia: string;
 }
 
+export interface AporteMensualAdmin {
+  idAporteMensual: string;
+  cuentaId: string;
+  mes: string;
+  monto: number;
+  metaMensual: number;
+  referencia: string | null;
+  comprobante: string;
+  archivoNombre: string;
+  descripcion: string | null;
+  estado: 'pendiente' | 'aprobado' | 'rechazado';
+  fechaRegistro: string;
+  createdAt: string;
+  numeroCuenta: string;
+  cuentaNombre: string;
+  socioId: string;
+  socioCodigo: string;
+  socioNombre: string;
+}
+
 export interface UsuarioSistema {
   id: string;
   nombre: string;
@@ -212,6 +232,66 @@ export const MOCK_MOVIMIENTOS_ADMIN: MovimientoAdmin[] = [
     monto: 25000,
     descripcion: 'Desembolso crédito negocio',
     referencia: 'DES-2026-00012',
+  },
+];
+
+export const MOCK_APORTES_MENSUALES_ADMIN: AporteMensualAdmin[] = [
+  {
+    idAporteMensual: '1337cc13-701d-4fb5-be4a-00d259c493be',
+    cuentaId: '7b62b813-0266-4510-9358-deede4f74dde',
+    mes: '2026-06',
+    monto: 19.98,
+    metaMensual: 20,
+    referencia: null,
+    comprobante: '123',
+    archivoNombre: 'FinnovaLogoPrincipal.png',
+    descripcion: null,
+    estado: 'pendiente',
+    fechaRegistro: '2026-06-29T05:12:01.173Z',
+    createdAt: '2026-06-29T05:12:01.173Z',
+    numeroCuenta: 'FNV085952020',
+    cuentaNombre: 'Ahorro vacaciones',
+    socioId: 'e11da36e-f0e1-45ab-8945-ed59025816ee',
+    socioCodigo: 'SOC-18BBC0',
+    socioNombre: 'JOsue Tipan',
+  },
+  {
+    idAporteMensual: 'acff0a49-8877-43ca-b7c8-33e8bb35be0e',
+    cuentaId: '7b62b813-0266-4510-9358-deede4f74dde',
+    mes: '2026-06',
+    monto: 20,
+    metaMensual: 20,
+    referencia: null,
+    comprobante: '12345678',
+    archivoNombre: 'lobby.png',
+    descripcion: null,
+    estado: 'pendiente',
+    fechaRegistro: '2026-06-29T04:40:15.223Z',
+    createdAt: '2026-06-29T04:40:15.223Z',
+    numeroCuenta: 'FNV085952020',
+    cuentaNombre: 'Ahorro vacaciones',
+    socioId: 'e11da36e-f0e1-45ab-8945-ed59025816ee',
+    socioCodigo: 'SOC-18BBC0',
+    socioNombre: 'JOsue Tipan',
+  },
+  {
+    idAporteMensual: '603f7355-2e9c-4755-b48d-5e99e740fc0a',
+    cuentaId: '7b62b813-0266-4510-9358-deede4f74dde',
+    mes: '2026-06',
+    monto: 25,
+    metaMensual: 20,
+    referencia: 'p',
+    comprobante: '1234567',
+    archivoNombre: 'Preuba',
+    descripcion: 'opcionalsss',
+    estado: 'pendiente',
+    fechaRegistro: '2026-06-29T04:38:02.514Z',
+    createdAt: '2026-06-29T04:38:02.514Z',
+    numeroCuenta: 'FNV085952020',
+    cuentaNombre: 'Ahorro vacaciones',
+    socioId: 'e11da36e-f0e1-45ab-8945-ed59025816ee',
+    socioCodigo: 'SOC-18BBC0',
+    socioNombre: 'JOsue Tipan',
   },
 ];
 
