@@ -1,4 +1,4 @@
-// Menú lateral y permisos por rol
+// Menu lateral y permisos por rol
 import type { Rol } from '@entities/usuario/model';
 import { ROUTES } from './routes';
 
@@ -10,37 +10,30 @@ export interface NavItem {
   requiereCuenta?: boolean;
 }
 
-/** Módulos del cliente / operador — enfoque ahorro */
 export const USER_NAV_ITEMS: NavItem[] = [
   { to: ROUTES.DASHBOARD, label: 'Inicio', roles: ['cliente', 'operador'], requiereCuenta: true },
   { to: ROUTES.MIS_AHORROS, label: 'Movimientos', roles: ['cliente', 'operador'], requiereCuenta: true },
   { to: ROUTES.PAGOS, label: 'Registrar aporte', roles: ['cliente', 'operador'], requiereCuenta: true },
   { to: ROUTES.CALENDARIO, label: 'Calendario', roles: ['cliente', 'operador'], requiereCuenta: true },
+  { to: ROUTES.SOLICITUDES_CUENTA, label: 'Solicitudes', roles: ['cliente', 'operador'], requiereCuenta: true },
   { to: ROUTES.MI_CUENTA, label: 'Mi Cuenta', roles: ['cliente', 'operador'], requiereCuenta: true },
   { to: ROUTES.PERFIL, label: 'Perfil', roles: ['cliente', 'operador'] },
 ];
 
-/** Panel del contador */
 export const CONTADOR_NAV_ITEMS: NavItem[] = [
   { to: ROUTES.CONTADOR_VERIFICACION, label: 'Verificar pagos', roles: ['contador'] },
   { to: ROUTES.PERFIL, label: 'Perfil', roles: ['contador'] },
 ];
 
-/** Panel de administración */
 export const ADMIN_NAV_ITEMS: NavItem[] = [
   { to: ROUTES.ADMIN, label: 'Dashboard', roles: ['admin'] },
   { to: ROUTES.ADMIN_SOCIOS, label: 'Socios / Clientes', roles: ['admin'] },
-  { to: ROUTES.ADMIN_CUENTAS_AHORRO, label: 'Cuentas de ahorro', roles: ['admin'] },
-  { to: ROUTES.ADMIN_PAGOS, label: 'Aportes', roles: ['admin'] },
-  { to: ROUTES.ADMIN_MOVIMIENTOS, label: 'Movimientos', roles: ['admin'] },
-  { to: ROUTES.ADMIN_REPORTES, label: 'Reportes', roles: ['admin'] },
-  { to: ROUTES.ADMIN_USUARIOS_ROLES, label: 'Usuarios y roles', roles: ['admin'] },
-  { to: ROUTES.ADMIN_CONFIGURACION, label: 'Configuración', roles: ['admin'] },
+  { to: ROUTES.ADMIN_CUENTAS_AHORRO, label: 'Solicitudes', roles: ['admin'] },
+  { to: ROUTES.ADMIN_CONFIGURACION, label: 'Configuracion', roles: ['admin'] },
 ];
 
 export const ALL_NAV_ITEMS: NavItem[] = [...USER_NAV_ITEMS, ...CONTADOR_NAV_ITEMS, ...ADMIN_NAV_ITEMS];
 
-/** Permisos de ruta → roles permitidos */
 export const ROUTE_ACCESS: Record<string, Rol[]> = ALL_NAV_ITEMS.reduce(
   (acc, item) => {
     const existentes = acc[item.to] ?? [];

@@ -19,6 +19,7 @@ import { CrearSolicitudCuentaUseCase } from './application/use-cases/crear-solic
 import { ListarMisSolicitudesUseCase } from './application/use-cases/listar-mis-solicitudes.use-case';
 import { ListarMisAportesUseCase } from './application/use-cases/listar-mis-aportes.use-case';
 import { GetComprobanteAporteUseCase } from './application/use-cases/get-comprobante-aporte.use-case';
+import { GetComprobanteAporteAdminUseCase } from './application/use-cases/get-comprobante-aporte-admin.use-case';
 import { GetResumenAhorroUseCase } from './application/use-cases/get-resumen-ahorro.use-case';
 import { GetMiInvitacionUseCase } from './application/use-cases/get-mi-invitacion.use-case';
 import { CrearMiCuentaUseCase } from './application/use-cases/crear-mi-cuenta.use-case';
@@ -65,6 +66,7 @@ import { AdminAhorroController } from './presentation/controllers/admin-ahorro.c
     ListarMisSolicitudesUseCase,
     ListarMisAportesUseCase,
     GetComprobanteAporteUseCase,
+    GetComprobanteAporteAdminUseCase,
     GetResumenAhorroUseCase,
     GetMiInvitacionUseCase,
     CrearMiCuentaUseCase,

@@ -6,14 +6,17 @@ const STATUS_MAP: Record<string, StatusVariant> = {
   activa:          'success',
   activo:          'success',
   aprobado:        'success',
+  aprobada:        'success',
   verificado:      'success',
   completado:      'success',
   pagado:          'success',
   pagada:          'success',
   deposito:        'primary',
   pendiente:       'warning',
+  incompleto:      'warning',
   transferencia:   'primary',
   bloqueada:       'danger',
+  atrasado:        'danger',
   rechazado:       'danger',
   rechazada:       'danger',
   inactiva:        'muted',
@@ -21,6 +24,7 @@ const STATUS_MAP: Record<string, StatusVariant> = {
   vencido:         'danger',
   vencida:         'danger',
   retiro:          'default',
+  eliminacion:     'muted',
 };
 
 const DOT_COLORS: Record<StatusVariant, string> = {

@@ -1,101 +1,187 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActionButton } from '@shared/ui/atoms/ActionButton';
 import { Input } from '@shared/ui/atoms/Input';
-import { TextArea } from '@shared/ui/atoms/TextArea';
 import { FormField } from '@shared/ui/molecules/FormField';
-import { TabbedContentShell } from '@shared/ui/molecules/TabbedContentShell';
 import { useToast } from '@shared/hooks/useToast';
-import { formatCurrency } from '@shared/lib/formatters';
-import { MOCK_CONFIG, type ConfigCooperativa } from '@shared/data/adminMockData';
+import { formatCurrency, formatDate } from '@shared/lib/formatters';
+import type { ConfiguracionMetaAhorro } from '@features/ahorro/domain/ahorro.entity';
+import {
+  getMetaAhorroAdmin,
+  patchMetaAhorroAdmin,
+} from '../../infrastructure/api/admin-ahorro.api';
+
+interface MetaForm {
+  metaMensual: string;
+  metaMinima: string;
+  metaMaxima: string;
+}
+
+const EMPTY_FORM: MetaForm = {
+  metaMensual: '',
+  metaMinima: '',
+  metaMaxima: '',
+};
+
+function toForm(meta: ConfiguracionMetaAhorro): MetaForm {
+  return {
+    metaMensual: String(meta.metaMensual),
+    metaMinima: String(meta.metaMinima),
+    metaMaxima: String(meta.metaMaxima),
+  };
+}
 
 export function AdminConfiguracionView() {
   const toast = useToast();
-  const [tab, setTab] = useState('ahorro');
-  const [config, setConfig] = useState<ConfigCooperativa>(MOCK_CONFIG);
+  const [meta, setMeta] = useState<ConfiguracionMetaAhorro | null>(null);
+  const [form, setForm] = useState<MetaForm>(EMPTY_FORM);
+  const [cargando, setCargando] = useState(true);
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const guardar = () => {
-    toast.success('Configuración guardada (demo). La meta mensual se aplicará a nuevas cuentas.');
+  useEffect(() => {
+    let mounted = true;
+
+    async function cargarMeta() {
+      setCargando(true);
+      setError(null);
+      try {
+        const data = await getMetaAhorroAdmin();
+        if (!mounted) return;
+        setMeta(data);
+        setForm(toForm(data));
+      } catch {
+        if (!mounted) return;
+        setError('No se pudo cargar la configuracion de meta.');
+      } finally {
+        if (mounted) setCargando(false);
+      }
+    }
+
+    void cargarMeta();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const metaMensual = Number(form.metaMensual);
+  const metaMinima = Number(form.metaMinima);
+  const metaMaxima = Number(form.metaMaxima);
+  const valoresValidos =
+    Number.isFinite(metaMensual) &&
+    Number.isFinite(metaMinima) &&
+    Number.isFinite(metaMaxima) &&
+    metaMensual > 0 &&
+    metaMinima > 0 &&
+    metaMaxima > 0 &&
+    metaMinima <= metaMensual &&
+    metaMensual <= metaMaxima;
+
+  const guardar = async () => {
+    if (!valoresValidos) {
+      toast.error('Verifica que minima <= mensual <= maxima y que todos los valores sean mayores a cero.');
+      return;
+    }
+
+    setGuardando(true);
+    try {
+      const data = await patchMetaAhorroAdmin({
+        metaMensual,
+        metaMinima,
+        metaMaxima,
+      });
+      setMeta(data);
+      setForm(toForm(data));
+      toast.success('Meta de ahorro actualizada.');
+    } catch {
+      toast.error('No se pudo actualizar la meta de ahorro.');
+    } finally {
+      setGuardando(false);
+    }
   };
 
   return (
-    <div className="flex flex-col gap-5">
-      <TabbedContentShell
-        tabs={[
-          { id: 'ahorro', label: 'Meta de ahorro' },
-          { id: 'cooperativa', label: 'Cooperativa' },
-          { id: 'tasas', label: 'Tasas' },
-          { id: 'general', label: 'Parámetros' },
-        ]}
-        activeTab={tab}
-        onTabChange={setTab}
-        ariaLabel="Configuración"
-      >
-        {tab === 'ahorro' && (
-          <div className="flex flex-col gap-4">
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
-              <p className="text-sm font-medium text-emerald-800">Meta de ahorro mensual</p>
-              <p className="mt-1 text-xs text-emerald-700/80">
-                Monto mínimo que cada socio debe aportar mensualmente. Los usuarios verán esta meta
-                en su dashboard y calendario de aportes.
-              </p>
+    <div className="max-w-3xl rounded-lg border border-slate-200 bg-white">
+      <div className="border-b border-slate-100 px-5 py-4">
+        <p className="text-sm font-semibold text-slate-900">Meta de ahorro</p>
+        <p className="mt-1 text-sm text-slate-500">
+          Configura los valores que usara el sistema para validar los aportes mensuales.
+        </p>
+      </div>
+
+      <div className="p-5">
+        {cargando ? (
+          <p className="text-sm text-slate-500">Cargando configuracion...</p>
+        ) : error ? (
+          <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </p>
+        ) : (
+          <>
+            <div className="grid gap-4 md:grid-cols-3">
+              <FormField label="Meta minima" htmlFor="cfg-meta-minima" required>
+                <Input
+                  id="cfg-meta-minima"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={form.metaMinima}
+                  onChange={(event) => setForm((current) => ({
+                    ...current,
+                    metaMinima: event.target.value,
+                  }))}
+                />
+              </FormField>
+
+              <FormField label="Meta mensual" htmlFor="cfg-meta-mensual" required>
+                <Input
+                  id="cfg-meta-mensual"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={form.metaMensual}
+                  onChange={(event) => setForm((current) => ({
+                    ...current,
+                    metaMensual: event.target.value,
+                  }))}
+                />
+              </FormField>
+
+              <FormField label="Meta maxima" htmlFor="cfg-meta-maxima" required>
+                <Input
+                  id="cfg-meta-maxima"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={form.metaMaxima}
+                  onChange={(event) => setForm((current) => ({
+                    ...current,
+                    metaMaxima: event.target.value,
+                  }))}
+                />
+              </FormField>
             </div>
-            <FormField label="Meta mensual por socio ($)" htmlFor="cfg-meta-mensual" required>
-              <Input
-                id="cfg-meta-mensual"
-                type="number"
-                min={1}
-                step="1"
-                value={config.metaAhorroMensual}
-                onChange={(e) => setConfig({ ...config, metaAhorroMensual: Number(e.target.value) })}
-              />
-            </FormField>
-            <p className="text-sm text-slate-500">
-              Vista previa: cada socio deberá aportar al menos{' '}
-              <strong className="text-slate-700">{formatCurrency(config.metaAhorroMensual)}</strong>{' '}
-              al mes para cumplir su meta.
-            </p>
-          </div>
-        )}
 
-        {tab === 'cooperativa' && (
-          <div className="flex flex-col gap-4">
-            <FormField label="Nombre" htmlFor="cfg-nombre">
-              <Input id="cfg-nombre" value={config.nombre} onChange={(e) => setConfig({ ...config, nombre: e.target.value })} />
-            </FormField>
-            <FormField label="RFC" htmlFor="cfg-rfc">
-              <Input id="cfg-rfc" value={config.rfc} onChange={(e) => setConfig({ ...config, rfc: e.target.value })} />
-            </FormField>
-            <FormField label="Teléfono" htmlFor="cfg-tel">
-              <Input id="cfg-tel" value={config.telefono} onChange={(e) => setConfig({ ...config, telefono: e.target.value })} />
-            </FormField>
-            <FormField label="Dirección" htmlFor="cfg-dir">
-              <TextArea id="cfg-dir" rows={2} value={config.direccion} onChange={(e) => setConfig({ ...config, direccion: e.target.value })} />
-            </FormField>
-          </div>
-        )}
+            <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              
+              {meta?.updatedAt && (
+                <p className="mt-1 text-xs text-slate-500">
+                  Ultima actualizacion: {formatDate(meta.updatedAt)}
+                </p>
+              )}
+            </div>
 
-        {tab === 'tasas' && (
-          <div className="flex flex-col gap-4">
-            <FormField label="Rendimiento ahorro anual (%)" htmlFor="cfg-tasa-ahorro">
-              <Input id="cfg-tasa-ahorro" type="number" step="0.01" value={config.tasaAhorroAnual * 100} onChange={(e) => setConfig({ ...config, tasaAhorroAnual: Number(e.target.value) / 100 })} />
-            </FormField>
-          </div>
+            <div className="mt-5 flex justify-end">
+              <ActionButton
+                type="button"
+                onClick={guardar}
+                disabled={!valoresValidos || guardando}
+                isLoading={guardando}
+              >
+                Guardar meta
+              </ActionButton>
+            </div>
+          </>
         )}
-
-        {tab === 'general' && (
-          <div className="flex flex-col gap-4">
-            <FormField label="Plazo mínimo (meses)" htmlFor="cfg-plazo-min">
-              <Input id="cfg-plazo-min" type="number" min={1} value={config.plazoMinimoMeses} onChange={(e) => setConfig({ ...config, plazoMinimoMeses: Number(e.target.value) })} />
-            </FormField>
-            <FormField label="Plazo máximo (meses)" htmlFor="cfg-plazo-max">
-              <Input id="cfg-plazo-max" type="number" min={1} value={config.plazoMaximoMeses} onChange={(e) => setConfig({ ...config, plazoMaximoMeses: Number(e.target.value) })} />
-            </FormField>
-          </div>
-        )}
-      </TabbedContentShell>
-
-      <div className="flex justify-end">
-        <ActionButton type="button" onClick={guardar}>Guardar configuración</ActionButton>
       </div>
     </div>
   );

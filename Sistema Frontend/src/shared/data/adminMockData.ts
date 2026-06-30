@@ -89,6 +89,13 @@ export interface MovimientoAdmin {
   referencia: string;
 }
 
+export type EstadoAporteMensualAdmin =
+  | 'pendiente'
+  | 'verificado'
+  | 'incompleto'
+  | 'atrasado'
+  | 'rechazado';
+
 export interface AporteMensualAdmin {
   idAporteMensual: string;
   cuentaId: string;
@@ -99,7 +106,7 @@ export interface AporteMensualAdmin {
   comprobante: string;
   archivoNombre: string;
   descripcion: string | null;
-  estado: 'pendiente' | 'aprobado' | 'rechazado';
+  estado: EstadoAporteMensualAdmin;
   fechaRegistro: string;
   createdAt: string;
   numeroCuenta: string;

@@ -28,6 +28,7 @@ const crear_solicitud_cuenta_use_case_1 = require("./application/use-cases/crear
 const listar_mis_solicitudes_use_case_1 = require("./application/use-cases/listar-mis-solicitudes.use-case");
 const listar_mis_aportes_use_case_1 = require("./application/use-cases/listar-mis-aportes.use-case");
 const get_comprobante_aporte_use_case_1 = require("./application/use-cases/get-comprobante-aporte.use-case");
+const get_comprobante_aporte_admin_use_case_1 = require("./application/use-cases/get-comprobante-aporte-admin.use-case");
 const get_resumen_ahorro_use_case_1 = require("./application/use-cases/get-resumen-ahorro.use-case");
 const get_mi_invitacion_use_case_1 = require("./application/use-cases/get-mi-invitacion.use-case");
 const crear_mi_cuenta_use_case_1 = require("./application/use-cases/crear-mi-cuenta.use-case");
@@ -77,6 +78,7 @@ exports.AhorroModule = AhorroModule = __decorate([
             listar_mis_solicitudes_use_case_1.ListarMisSolicitudesUseCase,
             listar_mis_aportes_use_case_1.ListarMisAportesUseCase,
             get_comprobante_aporte_use_case_1.GetComprobanteAporteUseCase,
+            get_comprobante_aporte_admin_use_case_1.GetComprobanteAporteAdminUseCase,
             get_resumen_ahorro_use_case_1.GetResumenAhorroUseCase,
             get_mi_invitacion_use_case_1.GetMiInvitacionUseCase,
             crear_mi_cuenta_use_case_1.CrearMiCuentaUseCase,

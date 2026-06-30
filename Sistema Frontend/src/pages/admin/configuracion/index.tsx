@@ -4,8 +4,8 @@ import { AdminConfiguracionView } from '@features/admin';
 export function AdminConfiguracionPage() {
   return (
     <AdminModulePage
-      title="Configuración"
-      description="Parámetros generales del sistema de ahorro y crédito."
+      title="Configuracion de meta"
+      description="Actualiza la meta mensual, minima y maxima de ahorro."
     >
       <AdminConfiguracionView />
     </AdminModulePage>

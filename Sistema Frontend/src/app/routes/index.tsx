@@ -11,15 +11,12 @@ import { MiCuentaPage } from '@/pages/miCuenta';
 import { MisAhorrosPage } from '@/pages/misAhorros';
 import { PagosPage } from '@/pages/pagos';
 import { CalendarioPage } from '@/pages/calendario';
+import { SolicitudesCuentaPage } from '@/pages/solicitudesCuenta';
 import { HistorialPage } from '@/pages/historial';
 import { PerfilPage } from '@/pages/perfil';
 import { AdminDashboardPage } from '@/pages/admin';
 import { AdminSociosPage } from '@/pages/admin/socios';
 import { AdminCuentasAhorroPage } from '@/pages/admin/cuentasAhorro';
-import { AdminPagosPage } from '@/pages/admin/pagos';
-import { AdminMovimientosPage } from '@/pages/admin/movimientos';
-import { AdminReportesPage } from '@/pages/admin/reportes';
-import { AdminUsuariosRolesPage } from '@/pages/admin/usuariosRoles';
 import { AdminConfiguracionPage } from '@/pages/admin/configuracion';
 import { ContadorVerificacionPage } from '@/pages/contador/verificacion';
 import { ShowcasePage } from '@/pages/showcase';
@@ -108,6 +105,14 @@ export function AppRoutes() {
         }
       />
       <Route
+        path={ROUTES.SOLICITUDES_CUENTA}
+        element={
+          <Protected path={ROUTES.SOLICITUDES_CUENTA} requireCuenta>
+            <SolicitudesCuentaPage />
+          </Protected>
+        }
+      />
+      <Route
         path={ROUTES.INVITAR}
         element={<Navigate to={ROUTES.MI_CUENTA} replace />}
       />
@@ -148,38 +153,6 @@ export function AppRoutes() {
         element={
           <Protected path={ROUTES.ADMIN_CUENTAS_AHORRO}>
             <AdminCuentasAhorroPage />
-          </Protected>
-        }
-      />
-      <Route
-        path={ROUTES.ADMIN_PAGOS}
-        element={
-          <Protected path={ROUTES.ADMIN_PAGOS}>
-            <AdminPagosPage />
-          </Protected>
-        }
-      />
-      <Route
-        path={ROUTES.ADMIN_MOVIMIENTOS}
-        element={
-          <Protected path={ROUTES.ADMIN_MOVIMIENTOS}>
-            <AdminMovimientosPage />
-          </Protected>
-        }
-      />
-      <Route
-        path={ROUTES.ADMIN_REPORTES}
-        element={
-          <Protected path={ROUTES.ADMIN_REPORTES}>
-            <AdminReportesPage />
-          </Protected>
-        }
-      />
-      <Route
-        path={ROUTES.ADMIN_USUARIOS_ROLES}
-        element={
-          <Protected path={ROUTES.ADMIN_USUARIOS_ROLES}>
-            <AdminUsuariosRolesPage />
           </Protected>
         }
       />

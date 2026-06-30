@@ -4,8 +4,8 @@ import { AdminCuentasAhorroView } from '@features/admin';
 export function AdminCuentasAhorroPage() {
   return (
     <AdminModulePage
-      title="Cuentas de ahorro"
-      description="Supervisa y administra las cuentas de ahorro de los socios."
+      title="Solicitudes"
+      description="Consulta solicitudes de retiro y eliminacion de cuentas de ahorro."
     >
       <AdminCuentasAhorroView />
     </AdminModulePage>
