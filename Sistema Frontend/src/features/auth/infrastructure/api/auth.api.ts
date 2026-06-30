@@ -4,6 +4,7 @@ import type {
   BackendEnvelope,
   LoginResponseBody,
   RegisterDTO,
+  RegisterResponseBody,
   ResetPasswordRequest,
   ResetPasswordResponseBody,
 } from '../dtos/auth.dto';
@@ -20,8 +21,8 @@ export async function postLogout(): Promise<void> {
   await httpClient.post(API_CONFIG.endpoints.auth.logout);
 }
 
-export async function postRegister(payload: RegisterDTO): Promise<LoginResponseBody> {
-  const { data } = await httpClient.post<BackendEnvelope<LoginResponseBody>>(
+export async function postRegister(payload: RegisterDTO): Promise<RegisterResponseBody> {
+  const { data } = await httpClient.post<BackendEnvelope<RegisterResponseBody>>(
     API_CONFIG.endpoints.auth.register,
     payload,
   );
@@ -39,8 +40,13 @@ export async function postResetPassword(
 }
 
 export async function postRefreshToken(): Promise<{ token: string }> {
-  const { data } = await httpClient.post<BackendEnvelope<{ accessToken: string }>>(
+  const refreshToken = localStorage.getItem('auth_refresh_token');
+  const { data } = await httpClient.post<
+    BackendEnvelope<LoginResponseBody> | LoginResponseBody
+  >(
     API_CONFIG.endpoints.auth.refresh,
+    { refreshToken },
   );
-  return { token: data.body.accessToken };
+  const body = 'body' in data ? data.body : data;
+  return { token: body.accessToken };
 }

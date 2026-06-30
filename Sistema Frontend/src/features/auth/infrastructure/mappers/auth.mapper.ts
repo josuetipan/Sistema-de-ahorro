@@ -27,5 +27,7 @@ export function toAuthSession(body: LoginResponseBody): AuthSession {
   return {
     user: toUsuario(body.user),
     token: body.accessToken,
+    refreshToken: body.refreshToken,
+    expiresIn: body.expiresIn,
   };
 }

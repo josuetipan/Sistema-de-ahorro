@@ -13,7 +13,7 @@ export function useLogin() {
       setIsSubmitting(true);
       try {
         const session = await autenticarUsuarioUseCase(authRepository, data);
-        loginStore(session.user, session.token);
+        loginStore(session.user, session.token, session.refreshToken);
         return session;
       } finally {
         setIsSubmitting(false);

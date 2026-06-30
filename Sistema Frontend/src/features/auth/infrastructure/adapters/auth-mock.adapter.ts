@@ -27,6 +27,7 @@ export class AuthMockAdapter implements IAuthRepository {
     return {
       user: match.user,
       token: MOCK_TOKEN,
+      refreshToken: MOCK_TOKEN,
     };
   }
 

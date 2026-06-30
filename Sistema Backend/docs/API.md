@@ -222,7 +222,7 @@ Público.
 ---
 
 ### `POST /api/auth/reset-password` — Cambiar mi contraseña
-🔒 Requiere token **CUSTOMER**. El `idUsuario` debe coincidir con el del token.
+🔒 Requiere cualquier token válido (Bearer). El `idUsuario` debe coincidir con el del token.
 
 **Body:**
 ```json
@@ -624,7 +624,7 @@ Ejemplo: para desactivar un banner, manda solo el campo de texto `activo` = `fal
 | POST | `/api/auth/logout` | público |
 | POST | `/api/auth/register` | ADMIN |
 | GET | `/api/auth/me` | autenticado |
-| POST | `/api/auth/reset-password` | CUSTOMER |
+| POST | `/api/auth/reset-password` | autenticado |
 | PUT | `/api/auth/user/password` | ADMIN |
 | GET | `/api/auth/admin/health` | ADMIN |
 | GET | `/api/auth/roles` | ADMIN |

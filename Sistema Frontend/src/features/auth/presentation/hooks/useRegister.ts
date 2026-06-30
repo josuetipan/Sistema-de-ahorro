@@ -1,48 +1,25 @@
 import { useCallback, useState } from 'react';
-import type { RegistroPublicoSocioFormData } from '@features/socio';
-import {
-  registrarSocioPublicoUseCase,
-  socioMockRepository,
-} from '@features/socio';
-import { MOCK_TOKEN } from '../../infrastructure/mocks/auth.mock';
-import { useAuthStore } from './useAuthStore';
+import type { RegisterFormData } from '../../application/schemas/login.schema';
+import { postRegister } from '../../infrastructure/api/auth.api';
 
 export function useRegister() {
-  const loginStore = useAuthStore((s) => s.login);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const register = useCallback(
-    async (data: RegistroPublicoSocioFormData) => {
-      setIsSubmitting(true);
-      try {
-        const socio = await registrarSocioPublicoUseCase(socioMockRepository, {
-          nombres: data.nombres,
-          cedula: data.cedula,
-          email: data.email,
-          telefono: data.telefono,
-          codigoReferenciaIngresado: data.codigoReferenciaIngresado,
-        });
-
-        loginStore(
-          {
-            id: socio.id,
-            email: socio.email,
-            nombre: socio.nombres,
-            rol: 'cliente',
-            activo: true,
-            createdAt: new Date().toISOString(),
-            perfil: { telefono: socio.telefono },
-          },
-          MOCK_TOKEN,
-        );
-
-        return socio;
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
-    [loginStore],
-  );
+  const register = useCallback(async (data: RegisterFormData) => {
+    setIsSubmitting(true);
+    try {
+      return await postRegister({
+        fullName: data.fullName,
+        identification: data.identification,
+        email: data.email,
+        phoneNumber: data.phoneNumber,
+        roleCode: 'CUSTOMER',
+        password: data.password,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, []);
 
   return { register, isSubmitting };
 }

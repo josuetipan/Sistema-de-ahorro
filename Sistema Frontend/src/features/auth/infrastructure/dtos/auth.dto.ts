@@ -29,15 +29,41 @@ export interface LoginResponseBody {
 }
 
 export interface RegisterDTO {
-  nombre: string;
+  fullName: string;
+  identification: string;
   email: string;
+  phoneNumber: string;
+  roleCode: 'CUSTOMER';
   password: string;
+}
+
+export interface RegisterResponseBody {
+  id: string;
+  usuario: string;
+  email: string;
+  fullName: string;
+  phoneNumber: string;
+  identification: string;
+  cityId: string;
+  cityName: string;
+  roles: string[];
+  socio: {
+    id: string;
+    codigo: string;
+    estado: string;
+  };
+  invitacion: {
+    id: string;
+    codigo: string;
+    activo: boolean;
+  };
+  pendingPasswordReset: boolean;
 }
 
 /** Petición de cambio de contraseña */
 export interface ResetPasswordRequest {
   idUsuario: string;
-  currentPassword: string;
+  currentPassword?: string;
   newPassword: string;
 }
 
