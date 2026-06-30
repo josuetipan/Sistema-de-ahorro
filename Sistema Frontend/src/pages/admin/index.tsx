@@ -4,8 +4,8 @@ import { AdminDashboardView } from '@features/admin';
 export function AdminDashboardPage() {
   return (
     <AdminModulePage
-      title="Panel administrador"
-      description="Resumen general de la cooperativa: socios, ahorros, créditos y operaciones."
+      title="Aportes de ahorro"
+      description="Consulta los aportes mensuales registrados por estado y mes."
     >
       <AdminDashboardView />
     </AdminModulePage>

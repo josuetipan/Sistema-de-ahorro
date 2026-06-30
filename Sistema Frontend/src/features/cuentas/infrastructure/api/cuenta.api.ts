@@ -11,6 +11,10 @@ import type {
   ResumenAhorroDTO,
 } from '../dtos/cuenta.dto';
 import type { ListarAportesParams } from '../../domain/cuenta.entity';
+import type {
+  CrearSolicitudCuentaInput,
+  SolicitudCuenta,
+} from '../../domain/cuenta.entity';
 
 export async function getResumenAhorro(): Promise<ResumenAhorroDTO> {
   const { data } = await httpClient.get<ResumenAhorroDTO | BackendEnvelope<ResumenAhorroDTO>>(
@@ -66,4 +70,22 @@ export async function postCrearCuenta(payload: CrearCuentaRequest): Promise<Cuen
     payload,
   );
   return data.body;
+}
+
+export async function postSolicitudCuenta(
+  cuentaId: string,
+  payload: CrearSolicitudCuentaInput,
+): Promise<SolicitudCuenta> {
+  const { data } = await httpClient.post<BackendEnvelope<SolicitudCuenta> | SolicitudCuenta>(
+    `${API_CONFIG.endpoints.ahorro.cuentas}/${cuentaId}/solicitudes`,
+    payload,
+  );
+  return 'body' in data ? data.body : data;
+}
+
+export async function getMisSolicitudes(): Promise<SolicitudCuenta[]> {
+  const { data } = await httpClient.get<
+    BackendEnvelope<SolicitudCuenta[]> | SolicitudCuenta[]
+  >(API_CONFIG.endpoints.ahorro.misSolicitudes);
+  return Array.isArray(data) ? data : data.body;
 }

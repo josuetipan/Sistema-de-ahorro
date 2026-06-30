@@ -53,6 +53,7 @@ import {
 } from '../../domain/ahorro.errors';
 import { CrearCuentaUseCase } from '../../application/use-cases/crear-cuenta.use-case';
 import { ListarAportesUseCase } from '../../application/use-cases/listar-aportes.use-case';
+import { GetComprobanteAporteAdminUseCase } from '../../application/use-cases/get-comprobante-aporte-admin.use-case';
 import { VerificarAporteUseCase } from '../../application/use-cases/verificar-aporte.use-case';
 import { GetMetaConfigUseCase } from '../../application/use-cases/get-meta-config.use-case';
 import { ActualizarMetaConfigUseCase } from '../../application/use-cases/actualizar-meta-config.use-case';
@@ -86,6 +87,12 @@ const ESTADOS_CUENTA: EstadoCuenta[] = [
   'bloqueada',
   'cerrada',
 ];
+const ESTADOS_SOLICITUD: EstadoSolicitudCuenta[] = [
+  'pendiente',
+  'aprobada',
+  'rechazada',
+];
+const TIPOS_SOLICITUD: TipoSolicitudCuenta[] = ['eliminacion', 'retiro'];
 
 function cleanQueryParam(value?: string): string | undefined {
   const clean = value?.trim();
@@ -101,6 +108,7 @@ export class AdminAhorroController {
   constructor(
     private readonly crearCuenta: CrearCuentaUseCase,
     private readonly listarAportes: ListarAportesUseCase,
+    private readonly getComprobanteAporte: GetComprobanteAporteAdminUseCase,
     private readonly verificarAporte: VerificarAporteUseCase,
     private readonly getMetaConfig: GetMetaConfigUseCase,
     private readonly actualizarMetaConfig: ActualizarMetaConfigUseCase,
@@ -174,6 +182,15 @@ export class AdminAhorroController {
         observaciones: body.observaciones ?? null,
         verificadoPor: user.id,
       });
+    } catch (err) {
+      throw this.mapError(err);
+    }
+  }
+
+  @Get('aportes/:aporteId/comprobante')
+  async comprobanteAporte(@Param('aporteId', ParseUUIDPipe) aporteId: string) {
+    try {
+      return await this.getComprobanteAporte.execute(aporteId);
     } catch (err) {
       throw this.mapError(err);
     }
@@ -262,10 +279,25 @@ export class AdminAhorroController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
+    const estadoClean = cleanQueryParam(estado);
+    const tipoClean = cleanQueryParam(tipo);
+    if (
+      estadoClean &&
+      !ESTADOS_SOLICITUD.includes(estadoClean as EstadoSolicitudCuenta)
+    ) {
+      throw new BadRequestException(
+        `estado debe ser uno de: ${ESTADOS_SOLICITUD.join(', ')}`,
+      );
+    }
+    if (tipoClean && !TIPOS_SOLICITUD.includes(tipoClean as TipoSolicitudCuenta)) {
+      throw new BadRequestException(
+        `tipo debe ser uno de: ${TIPOS_SOLICITUD.join(', ')}`,
+      );
+    }
     const pagination = parsePagination(page, limit);
     return this.listarSolicitudes.execute({
-      estado: estado as EstadoSolicitudCuenta | undefined,
-      tipo: tipo as TipoSolicitudCuenta | undefined,
+      estado: estadoClean as EstadoSolicitudCuenta | undefined,
+      tipo: tipoClean as TipoSolicitudCuenta | undefined,
       page: pagination.page,
       limit: pagination.limit,
     });

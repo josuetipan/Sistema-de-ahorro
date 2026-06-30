@@ -2,6 +2,7 @@ import { type UploadedFileLike } from "../../../../shared/presentation/uploaded-
 import { type AuthUserPayload } from '../../../auth/infrastructure/auth/current-user.decorator';
 import { CrearCuentaUseCase } from '../../application/use-cases/crear-cuenta.use-case';
 import { ListarAportesUseCase } from '../../application/use-cases/listar-aportes.use-case';
+import { GetComprobanteAporteAdminUseCase } from '../../application/use-cases/get-comprobante-aporte-admin.use-case';
 import { VerificarAporteUseCase } from '../../application/use-cases/verificar-aporte.use-case';
 import { GetMetaConfigUseCase } from '../../application/use-cases/get-meta-config.use-case';
 import { ActualizarMetaConfigUseCase } from '../../application/use-cases/actualizar-meta-config.use-case';
@@ -22,6 +23,7 @@ import { ActualizarBannerHttpDto } from '../dto/actualizar-banner.http.dto';
 export declare class AdminAhorroController {
     private readonly crearCuenta;
     private readonly listarAportes;
+    private readonly getComprobanteAporte;
     private readonly verificarAporte;
     private readonly getMetaConfig;
     private readonly actualizarMetaConfig;
@@ -34,10 +36,11 @@ export declare class AdminAhorroController {
     private readonly actualizarBanner;
     private readonly eliminarBanner;
     private readonly logger;
-    constructor(crearCuenta: CrearCuentaUseCase, listarAportes: ListarAportesUseCase, verificarAporte: VerificarAporteUseCase, getMetaConfig: GetMetaConfigUseCase, actualizarMetaConfig: ActualizarMetaConfigUseCase, listarSocios: ListarSociosAhorroUseCase, getSocio: GetSocioAhorroUseCase, listarSolicitudes: ListarSolicitudesUseCase, resolverSolicitud: ResolverSolicitudUseCase, listarBanners: ListarBannersAdminUseCase, crearBanner: CrearBannerUseCase, actualizarBanner: ActualizarBannerUseCase, eliminarBanner: EliminarBannerUseCase);
+    constructor(crearCuenta: CrearCuentaUseCase, listarAportes: ListarAportesUseCase, getComprobanteAporte: GetComprobanteAporteAdminUseCase, verificarAporte: VerificarAporteUseCase, getMetaConfig: GetMetaConfigUseCase, actualizarMetaConfig: ActualizarMetaConfigUseCase, listarSocios: ListarSociosAhorroUseCase, getSocio: GetSocioAhorroUseCase, listarSolicitudes: ListarSolicitudesUseCase, resolverSolicitud: ResolverSolicitudUseCase, listarBanners: ListarBannersAdminUseCase, crearBanner: CrearBannerUseCase, actualizarBanner: ActualizarBannerUseCase, eliminarBanner: EliminarBannerUseCase);
     crearCuentaParaSocio(socioId: string, body: CrearCuentaHttpDto): Promise<import("../../domain/ports/cuenta.repository.port").CuentaResumen>;
     aportes(estado?: string, mes?: string, cuentaId?: string, page?: string, limit?: string): Promise<import("../../../../shared/application/pagination").PaginatedResult<import("../../domain/ports/aporte.repository.port").AporteAdminItem>>;
     verificar(user: AuthUserPayload, aporteId: string, body: VerificarAporteHttpDto): Promise<import("../../domain/ports/aporte.repository.port").AporteResumen>;
+    comprobanteAporte(aporteId: string): Promise<import("../../domain/ports/aporte.repository.port").AporteComprobante>;
     meta(): Promise<import("../../domain/ports/meta-config.repository.port").MetaConfig>;
     actualizarMeta(body: ActualizarMetaConfigHttpDto): Promise<import("../../domain/ports/meta-config.repository.port").MetaConfig>;
     socios(page?: string, limit?: string, q?: string, estado?: string, codigo?: string, nombre?: string, email?: string, identification?: string, cuentaEstado?: string): Promise<import("../../../../shared/application/pagination").PaginatedResult<import("../../domain/ports/cuenta.repository.port").SocioAhorroResumen>>;

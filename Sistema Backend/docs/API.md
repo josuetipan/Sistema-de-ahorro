@@ -495,6 +495,9 @@ Lista **paginada** de aportes con filtros opcionales:
 - `page` / `limit` → paginación. `body` = `{ data, meta }`.
 - Igual que el listado del socio, **no** incluye `urlArchivo` (base64) por rendimiento; trae los datos de cuenta/socio (`numeroCuenta`, `cuentaNombre`, `socioNombre`, etc.) más los metadatos del aporte.
 
+### `GET /api/admin/ahorro/aportes/:aporteId/comprobante`
+Devuelve el comprobante del aporte para revisión administrativa. Incluye `urlArchivo` como base64 (`data:<mime>;base64,...`) y metadatos del archivo.
+
 ### `PATCH /api/admin/ahorro/aportes/:aporteId/estado` — Verificar aporte
 - `:aporteId` → UUID del aporte.
 
@@ -522,8 +525,18 @@ Devuelve la configuración de meta de ahorro global.
 ```
 - Todos opcionales pero debes mandar al menos uno. Valores ≥ 0, máx. 2 decimales.
 
-### `GET /api/admin/ahorro/socios?page=&limit=`
+### `GET /api/admin/ahorro/socios?page=&limit=&q=&estado=&codigo=&nombre=&email=&identification=&cuentaEstado=`
 Lista **paginada** de socios con su info de ahorro. `body` = `{ data, meta }`.
+
+Filtros opcionales:
+- `q` → búsqueda general por código, nombre, email, cédula/identificación, teléfono, número de cuenta o nombre de cuenta.
+- `estado` → `activo` | `inactivo` | `pendiente`.
+- `codigo` → código del socio.
+- `nombre` → nombre del usuario.
+- `email` → correo.
+- `identification` → cédula/identificación.
+- `cuentaEstado` → `activa` | `inactiva` | `bloqueada` | `cerrada`.
+- `page` / `limit` → paginación. Por defecto `page=1`, `limit=20`; máximo `limit=100`.
 
 ### `GET /api/admin/ahorro/socios/:socioId`
 Detalle de ahorro de un socio. `:socioId` → UUID.

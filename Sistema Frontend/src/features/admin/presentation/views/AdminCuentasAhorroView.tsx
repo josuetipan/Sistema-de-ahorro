@@ -1,145 +1,293 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { ActionButton } from '@shared/ui/atoms/ActionButton';
-import { TableActionButton, TableActions } from '@shared/ui/molecules/TableActions';
-import { FilterChipGroup } from '@shared/ui/molecules/FilterChipGroup';
+import { Select } from '@shared/ui/atoms/Select';
+import { TextArea } from '@shared/ui/atoms/TextArea';
 import { Modal } from '@shared/ui/molecules/Modal';
-import { SectionCard } from '@shared/ui/molecules/SectionCard';
 import { StatusBadge } from '@shared/ui/molecules/StatusBadge';
-import { TabbedContentShell } from '@shared/ui/molecules/TabbedContentShell';
 import { Table, type TableColumn } from '@shared/ui/molecules/Table';
+import { TableActionButton, TableActions } from '@shared/ui/molecules/TableActions';
 import { useToast } from '@shared/hooks/useToast';
-import { formatCurrency, formatDate } from '@shared/lib/formatters';
-import { MOCK_MOVIMIENTOS_ADMIN } from '@shared/data/adminMockData';
+import { formatCurrency, formatDate, formatNumber } from '@shared/lib/formatters';
 import {
-  useCuentasAhorroAdmin,
-  AdminCrearCuentaPanel,
-  type CuentaAhorroPublica,
-} from '@features/cuenta-ahorro';
+  patchResolverSolicitudCuentaAdmin,
+  type EstadoSolicitudCuentaAdmin,
+  type SolicitudCuentaAdmin,
+  type TipoSolicitudCuentaAdmin,
+} from '../../infrastructure/api/admin-ahorro.api';
+import { useSolicitudesCuentaAdmin } from '../../application/hooks/useSolicitudesCuentaAdmin';
 
-type FiltroEstado = 'todas' | 'ACTIVA' | 'INACTIVA';
+const PAGE_SIZE = 10;
 
 export function AdminCuentasAhorroView() {
   const toast = useToast();
-  const { cuentas, cargando, recargar } = useCuentasAhorroAdmin();
-  const [filtro, setFiltro] = useState<FiltroEstado>('todas');
-  const [tab, setTab] = useState('lista');
-  const [detalle, setDetalle] = useState<CuentaAhorroPublica | null>(null);
+  const [estado, setEstado] = useState<EstadoSolicitudCuentaAdmin | ''>('pendiente');
+  const [tipo, setTipo] = useState<TipoSolicitudCuentaAdmin | ''>('');
+  const [page, setPage] = useState(1);
+  const [solicitudSeleccionada, setSolicitudSeleccionada] = useState<SolicitudCuentaAdmin | null>(null);
+  const [observaciones, setObservaciones] = useState('Aprobado tras revision');
+  const [resolviendo, setResolviendo] = useState<'aprobar' | 'rechazar' | null>(null);
 
-  const filtradas = useMemo(
-    () => (filtro === 'todas' ? cuentas : cuentas.filter((c) => c.estado === filtro)),
-    [cuentas, filtro],
-  );
+  const { solicitudes, meta, cargando, error, recargar } = useSolicitudesCuentaAdmin({
+    estado,
+    tipo,
+    page,
+    limit: PAGE_SIZE,
+  });
 
-  const toggleEstado = (cuenta: CuentaAhorroPublica) => {
-    toast.show('Cambio de estado disponible al integrar backend.');
-    void cuenta;
-    void recargar;
+  const abrirResolver = (solicitud: SolicitudCuentaAdmin) => {
+    setSolicitudSeleccionada(solicitud);
+    setObservaciones(
+      solicitud.estado === 'rechazada'
+        ? 'Rechazado tras revision'
+        : 'Aprobado tras revision',
+    );
   };
 
-  const columns: TableColumn<CuentaAhorroPublica>[] = [
-    { key: 'numeroCuenta', header: 'No. cuenta' },
-    { key: 'socioNombre', header: 'Socio' },
-    { key: 'correo', header: 'Correo cuenta' },
+  const resolverSolicitud = async (aprobar: boolean) => {
+    if (!solicitudSeleccionada) return;
+
+    setResolviendo(aprobar ? 'aprobar' : 'rechazar');
+    try {
+      await patchResolverSolicitudCuentaAdmin(solicitudSeleccionada.idSolicitudCuenta, {
+        aprobar,
+        observaciones: observaciones.trim() || (aprobar ? 'Aprobado tras revision' : 'Rechazado tras revision'),
+      });
+      toast.success(`Solicitud ${aprobar ? 'aprobada' : 'rechazada'}.`);
+      setSolicitudSeleccionada(null);
+      setObservaciones('Aprobado tras revision');
+      await recargar();
+    } catch {
+      toast.error('No se pudo resolver la solicitud.');
+    } finally {
+      setResolviendo(null);
+    }
+  };
+
+  const columns: TableColumn<SolicitudCuentaAdmin>[] = [
     {
-      key: 'codigoReferencia',
-      header: 'Cód. referencia',
-      render: (r) => r.codigoReferencia ?? '—',
+      key: 'socioNombre',
+      header: 'Socio',
+      render: (solicitud) => (
+        <div className="min-w-[12rem]">
+          <p className="font-medium text-slate-900">{solicitud.socioNombre}</p>
+          <p className="font-mono text-[11px] text-slate-500">{solicitud.socioId}</p>
+        </div>
+      ),
     },
-    { key: 'saldo', header: 'Saldo', numeric: true, render: (r) => formatCurrency(r.saldo) },
+    {
+      key: 'numeroCuentaOrigen',
+      header: 'Cuenta origen',
+      render: (solicitud) => (
+        <span className="font-mono text-xs text-slate-700">{solicitud.numeroCuentaOrigen}</span>
+      ),
+    },
+    {
+      key: 'tipo',
+      header: 'Tipo',
+      render: (solicitud) => <StatusBadge status={solicitud.tipo} label={solicitud.tipo} />,
+    },
+    {
+      key: 'monto',
+      header: 'Monto',
+      numeric: true,
+      render: (solicitud) =>
+        solicitud.monto == null ? '-' : formatCurrency(solicitud.monto, 'USD'),
+    },
     {
       key: 'estado',
       header: 'Estado',
-      render: (r) => <StatusBadge status={r.estado.toLowerCase()} label={r.estado} />,
+      render: (solicitud) => <StatusBadge status={solicitud.estado} />,
     },
-    { key: 'fechaApertura', header: 'Apertura', render: (r) => formatDate(r.fechaApertura) },
+    {
+      key: 'motivo',
+      header: 'Motivo',
+      render: (solicitud) => (
+        <span className="block max-w-[18rem] truncate" title={solicitud.motivo}>
+          {solicitud.motivo || '-'}
+        </span>
+      ),
+    },
+    {
+      key: 'observaciones',
+      header: 'Observaciones',
+      render: (solicitud) => (
+        <span className="block max-w-[18rem] truncate" title={solicitud.observaciones ?? ''}>
+          {solicitud.observaciones || '-'}
+        </span>
+      ),
+    },
+    {
+      key: 'createdAt',
+      header: 'Creada',
+      render: (solicitud) => formatDate(solicitud.createdAt),
+    },
+    {
+      key: 'fechaResolucion',
+      header: 'Resolucion',
+      render: (solicitud) =>
+        solicitud.fechaResolucion ? formatDate(solicitud.fechaResolucion) : '-',
+    },
     {
       key: 'acciones',
       header: 'Acciones',
-      render: (r) => (
+      render: (solicitud) => (
         <TableActions>
-          <TableActionButton type="button" onClick={() => setDetalle(r)}>
-            Historial
-          </TableActionButton>
-          <TableActionButton type="button" onClick={() => toggleEstado(r)}>
-            {r.estado === 'ACTIVA' ? 'Desactivar' : 'Activar'}
+          <TableActionButton
+            type="button"
+            onClick={() => abrirResolver(solicitud)}
+            disabled={solicitud.estado !== 'pendiente'}
+          >
+            Resolver
           </TableActionButton>
         </TableActions>
       ),
     },
   ];
 
-  const movimientosCuenta = detalle
-    ? MOCK_MOVIMIENTOS_ADMIN.filter((m) => m.socio === detalle.socioNombre)
-    : [];
+  const cambiarEstado = (value: EstadoSolicitudCuentaAdmin | '') => {
+    setEstado(value);
+    setPage(1);
+  };
+
+  const cambiarTipo = (value: TipoSolicitudCuentaAdmin | '') => {
+    setTipo(value);
+    setPage(1);
+  };
 
   return (
-    <div className="flex flex-col gap-5">
-      <TabbedContentShell
-        tabs={[
-          { id: 'lista', label: 'Lista de cuentas' },
-          { id: 'crear', label: 'Crear cuenta' },
-          { id: 'movimientos', label: 'Depósitos y retiros' },
-        ]}
-        activeTab={tab}
-        onTabChange={setTab}
-        ariaLabel="Cuentas de ahorro"
+    <div className="flex min-h-[calc(100dvh-14rem)] flex-col gap-4">
+      <section className="rounded-lg border border-slate-200 bg-white">
+        <div className="grid gap-3 border-b border-slate-100 p-4 md:grid-cols-[180px_180px_auto] md:items-end">
+          <div>
+            <label htmlFor="solicitudes-estado" className="mb-1 block text-xs font-medium text-slate-600">
+              Estado
+            </label>
+            <Select
+              id="solicitudes-estado"
+              value={estado}
+              onChange={(event) => cambiarEstado(event.target.value as EstadoSolicitudCuentaAdmin | '')}
+            >
+              <option value="">Todos</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="aprobada">Aprobada</option>
+              <option value="rechazada">Rechazada</option>
+            </Select>
+          </div>
+
+          <div>
+            <label htmlFor="solicitudes-tipo" className="mb-1 block text-xs font-medium text-slate-600">
+              Tipo
+            </label>
+            <Select
+              id="solicitudes-tipo"
+              value={tipo}
+              onChange={(event) => cambiarTipo(event.target.value as TipoSolicitudCuentaAdmin | '')}
+            >
+              <option value="">Todos</option>
+              <option value="retiro">Retiro</option>
+              <option value="eliminacion">Eliminacion</option>
+            </Select>
+          </div>
+
+          <p className="text-xs text-slate-500 md:text-right">
+            {cargando
+              ? 'Cargando solicitudes...'
+              : error
+                ? error
+                : `${formatNumber(meta.total)} solicitud(es) encontradas`}
+          </p>
+        </div>
+
+        <Table
+          columns={columns}
+          data={solicitudes}
+          emptyMessage={error ?? 'No hay solicitudes con los filtros seleccionados.'}
+        />
+      </section>
+
+      <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-slate-600">
+          Pagina {formatNumber(meta.page)} de {formatNumber(meta.totalPages)} · limite {formatNumber(meta.limit)}
+        </p>
+        <div className="flex items-center gap-2">
+          <ActionButton
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+            disabled={page <= 1 || cargando}
+          >
+            Anterior
+          </ActionButton>
+          <ActionButton
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setPage((current) => Math.min(meta.totalPages, current + 1))}
+            disabled={page >= meta.totalPages || cargando}
+          >
+            Siguiente
+          </ActionButton>
+        </div>
+      </div>
+
+      <Modal
+        isOpen={Boolean(solicitudSeleccionada)}
+        onClose={() => {
+          if (!resolviendo) setSolicitudSeleccionada(null);
+        }}
+        title="Resolver solicitud"
       >
-        {tab === 'lista' && (
-          <>
-            <FilterChipGroup
-              value={filtro}
-              onChange={setFiltro}
-              ariaLabel="Estado de cuenta"
-              options={[
-                { value: 'todas', label: 'Todas', count: cuentas.length },
-                { value: 'ACTIVA', label: 'Activas', count: cuentas.filter((c) => c.estado === 'ACTIVA').length },
-                { value: 'INACTIVA', label: 'Inactivas', count: cuentas.filter((c) => c.estado === 'INACTIVA').length },
-              ]}
-            />
-            <SectionCard title="Cuentas registradas" className="mt-4">
-              {cargando ? (
-                <p className="py-8 text-center text-sm text-slate-500">Cargando cuentas…</p>
-              ) : (
-                <Table columns={columns} data={filtradas} />
-              )}
-            </SectionCard>
-          </>
-        )}
+        {solicitudSeleccionada && (
+          <div className="flex flex-col gap-4">
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              <p className="font-semibold text-slate-900">{solicitudSeleccionada.socioNombre}</p>
+              <p className="mt-1 font-mono text-xs">{solicitudSeleccionada.numeroCuentaOrigen}</p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <p>Tipo: <strong>{solicitudSeleccionada.tipo}</strong></p>
+                <p>
+                  Monto:{' '}
+                  <strong>
+                    {solicitudSeleccionada.monto == null
+                      ? '-'
+                      : formatCurrency(solicitudSeleccionada.monto, 'USD')}
+                  </strong>
+                </p>
+              </div>
+              <p className="mt-3">Motivo: {solicitudSeleccionada.motivo || '-'}</p>
+            </div>
 
-        {tab === 'crear' && <AdminCrearCuentaPanel />}
+            <div>
+              <label htmlFor="resolver-observaciones" className="mb-1 block text-xs font-medium text-slate-600">
+                Observaciones
+              </label>
+              <TextArea
+                id="resolver-observaciones"
+                value={observaciones}
+                onChange={(event) => setObservaciones(event.target.value)}
+                placeholder="Escribe una observacion para la resolucion."
+              />
+            </div>
 
-        {tab === 'movimientos' && (
-          <SectionCard title="Depósitos y retiros recientes">
-            <Table
-              columns={[
-                { key: 'fecha', header: 'Fecha', render: (r) => formatDate(r.fecha) },
-                { key: 'socio', header: 'Socio' },
-                { key: 'tipo', header: 'Tipo', render: (r) => <StatusBadge status={r.tipo} label={r.tipo} /> },
-                { key: 'monto', header: 'Monto', numeric: true, render: (r) => formatCurrency(r.monto) },
-                { key: 'descripcion', header: 'Descripción' },
-              ]}
-              data={MOCK_MOVIMIENTOS_ADMIN.filter((m) => m.tipo === 'deposito' || m.tipo === 'retiro')}
-            />
-          </SectionCard>
-        )}
-      </TabbedContentShell>
-
-      <Modal isOpen={!!detalle} onClose={() => setDetalle(null)} title={`Historial — ${detalle?.numeroCuenta}`}>
-        {detalle && (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-600">
-              Socio: <strong>{detalle.socioNombre}</strong> · Saldo: {formatCurrency(detalle.saldo)}
-            </p>
-            <Table
-              columns={[
-                { key: 'fecha', header: 'Fecha', render: (r) => formatDate(r.fecha) },
-                { key: 'tipo', header: 'Tipo' },
-                { key: 'monto', header: 'Monto', numeric: true, render: (r) => formatCurrency(r.monto) },
-                { key: 'descripcion', header: 'Descripción' },
-              ]}
-              data={movimientosCuenta}
-              emptyMessage="Sin movimientos para esta cuenta."
-            />
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <ActionButton
+                type="button"
+                variant="danger"
+                onClick={() => void resolverSolicitud(false)}
+                disabled={Boolean(resolviendo)}
+                isLoading={resolviendo === 'rechazar'}
+              >
+                Rechazar
+              </ActionButton>
+              <ActionButton
+                type="button"
+                onClick={() => void resolverSolicitud(true)}
+                disabled={Boolean(resolviendo)}
+                isLoading={resolviendo === 'aprobar'}
+              >
+                Aprobar
+              </ActionButton>
+            </div>
           </div>
         )}
       </Modal>

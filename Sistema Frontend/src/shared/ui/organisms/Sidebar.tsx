@@ -15,6 +15,7 @@ const ROUTE_ICONS: Record<string, NavIconName> = {
   [ROUTES.MIS_AHORROS]:             'savings',
   [ROUTES.PAGOS]:                   'upload',
   [ROUTES.CALENDARIO]:              'chart',
+  [ROUTES.SOLICITUDES_CUENTA]:      'file',
   [ROUTES.HISTORIAL]:               'history',
   [ROUTES.PERFIL]:                  'profile',
   [ROUTES.ADMIN]:                   'dashboard',
@@ -31,8 +32,7 @@ const ROUTE_ICONS: Record<string, NavIconName> = {
 const ADMIN_SECTIONS = [
   { label: 'General',   routes: [ROUTES.ADMIN] },
   { label: 'Socios',    routes: [ROUTES.ADMIN_SOCIOS, ROUTES.ADMIN_CUENTAS_AHORRO] },
-  { label: 'Finanzas',  routes: [ROUTES.ADMIN_PAGOS, ROUTES.ADMIN_MOVIMIENTOS, ROUTES.ADMIN_REPORTES] },
-  { label: 'Sistema',   routes: [ROUTES.ADMIN_USUARIOS_ROLES, ROUTES.ADMIN_CONFIGURACION] },
+  { label: 'Sistema',   routes: [ROUTES.ADMIN_CONFIGURACION] },
 ];
 
 export const SIDEBAR_HEADER_HEIGHT_CLASS = 'h-14';

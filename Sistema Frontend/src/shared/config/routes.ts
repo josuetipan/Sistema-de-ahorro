@@ -13,6 +13,7 @@ export const ROUTES = {
   MIS_AHORROS: '/mis-ahorros',
   PAGOS: '/pagos',
   CALENDARIO: '/calendario',
+  SOLICITUDES_CUENTA: '/solicitudes',
   INVITAR: '/invitar',
   HISTORIAL: '/historial',
   PERFIL: '/perfil',
@@ -38,5 +39,6 @@ export const ROUTES_REQUIEREN_CUENTA: string[] = [
   ROUTES.MIS_AHORROS,
   ROUTES.PAGOS,
   ROUTES.CALENDARIO,
+  ROUTES.SOLICITUDES_CUENTA,
   ROUTES.HISTORIAL,
 ];

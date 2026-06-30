@@ -25,6 +25,7 @@ const current_user_decorator_1 = require("../../../auth/infrastructure/auth/curr
 const ahorro_errors_1 = require("../../domain/ahorro.errors");
 const crear_cuenta_use_case_1 = require("../../application/use-cases/crear-cuenta.use-case");
 const listar_aportes_use_case_1 = require("../../application/use-cases/listar-aportes.use-case");
+const get_comprobante_aporte_admin_use_case_1 = require("../../application/use-cases/get-comprobante-aporte-admin.use-case");
 const verificar_aporte_use_case_1 = require("../../application/use-cases/verificar-aporte.use-case");
 const get_meta_config_use_case_1 = require("../../application/use-cases/get-meta-config.use-case");
 const actualizar_meta_config_use_case_1 = require("../../application/use-cases/actualizar-meta-config.use-case");
@@ -57,6 +58,12 @@ const ESTADOS_CUENTA = [
     'bloqueada',
     'cerrada',
 ];
+const ESTADOS_SOLICITUD = [
+    'pendiente',
+    'aprobada',
+    'rechazada',
+];
+const TIPOS_SOLICITUD = ['eliminacion', 'retiro'];
 function cleanQueryParam(value) {
     const clean = value?.trim();
     return clean === '' ? undefined : clean;
@@ -64,6 +71,7 @@ function cleanQueryParam(value) {
 let AdminAhorroController = AdminAhorroController_1 = class AdminAhorroController {
     crearCuenta;
     listarAportes;
+    getComprobanteAporte;
     verificarAporte;
     getMetaConfig;
     actualizarMetaConfig;
@@ -76,9 +84,10 @@ let AdminAhorroController = AdminAhorroController_1 = class AdminAhorroControlle
     actualizarBanner;
     eliminarBanner;
     logger = new common_1.Logger(AdminAhorroController_1.name);
-    constructor(crearCuenta, listarAportes, verificarAporte, getMetaConfig, actualizarMetaConfig, listarSocios, getSocio, listarSolicitudes, resolverSolicitud, listarBanners, crearBanner, actualizarBanner, eliminarBanner) {
+    constructor(crearCuenta, listarAportes, getComprobanteAporte, verificarAporte, getMetaConfig, actualizarMetaConfig, listarSocios, getSocio, listarSolicitudes, resolverSolicitud, listarBanners, crearBanner, actualizarBanner, eliminarBanner) {
         this.crearCuenta = crearCuenta;
         this.listarAportes = listarAportes;
+        this.getComprobanteAporte = getComprobanteAporte;
         this.verificarAporte = verificarAporte;
         this.getMetaConfig = getMetaConfig;
         this.actualizarMetaConfig = actualizarMetaConfig;
@@ -135,6 +144,14 @@ let AdminAhorroController = AdminAhorroController_1 = class AdminAhorroControlle
             throw this.mapError(err);
         }
     }
+    async comprobanteAporte(aporteId) {
+        try {
+            return await this.getComprobanteAporte.execute(aporteId);
+        }
+        catch (err) {
+            throw this.mapError(err);
+        }
+    }
     async meta() {
         return this.getMetaConfig.execute();
     }
@@ -185,10 +202,19 @@ let AdminAhorroController = AdminAhorroController_1 = class AdminAhorroControlle
         }
     }
     async solicitudes(estado, tipo, page, limit) {
+        const estadoClean = cleanQueryParam(estado);
+        const tipoClean = cleanQueryParam(tipo);
+        if (estadoClean &&
+            !ESTADOS_SOLICITUD.includes(estadoClean)) {
+            throw new common_1.BadRequestException(`estado debe ser uno de: ${ESTADOS_SOLICITUD.join(', ')}`);
+        }
+        if (tipoClean && !TIPOS_SOLICITUD.includes(tipoClean)) {
+            throw new common_1.BadRequestException(`tipo debe ser uno de: ${TIPOS_SOLICITUD.join(', ')}`);
+        }
         const pagination = (0, parse_pagination_1.parsePagination)(page, limit);
         return this.listarSolicitudes.execute({
-            estado: estado,
-            tipo: tipo,
+            estado: estadoClean,
+            tipo: tipoClean,
             page: pagination.page,
             limit: pagination.limit,
         });
@@ -301,6 +327,13 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AdminAhorroController.prototype, "verificar", null);
 __decorate([
+    (0, common_1.Get)('aportes/:aporteId/comprobante'),
+    __param(0, (0, common_1.Param)('aporteId', common_1.ParseUUIDPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AdminAhorroController.prototype, "comprobanteAporte", null);
+__decorate([
     (0, common_1.Get)('meta'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
@@ -397,6 +430,7 @@ exports.AdminAhorroController = AdminAhorroController = AdminAhorroController_1 
     (0, roles_decorator_1.Roles)(user_role_1.UserRole.ADMIN),
     __metadata("design:paramtypes", [crear_cuenta_use_case_1.CrearCuentaUseCase,
         listar_aportes_use_case_1.ListarAportesUseCase,
+        get_comprobante_aporte_admin_use_case_1.GetComprobanteAporteAdminUseCase,
         verificar_aporte_use_case_1.VerificarAporteUseCase,
         get_meta_config_use_case_1.GetMetaConfigUseCase,
         actualizar_meta_config_use_case_1.ActualizarMetaConfigUseCase,

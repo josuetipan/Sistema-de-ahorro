@@ -131,3 +131,27 @@ export interface CuentaCreada {
   socioId: string;
   titular: string;
 }
+
+export type TipoSolicitudCuenta = 'retiro' | 'eliminacion';
+export type EstadoSolicitudCuenta = 'pendiente' | 'aprobada' | 'rechazada';
+
+export interface CrearSolicitudCuentaInput {
+  tipo: TipoSolicitudCuenta;
+  monto?: number;
+  cuentaDestinoId?: string;
+  motivo?: string;
+}
+
+export interface SolicitudCuenta {
+  idSolicitudCuenta: string;
+  cuentaOrigenId: string;
+  cuentaDestinoId: string | null;
+  tipo: TipoSolicitudCuenta;
+  monto: number | null;
+  motivo: string | null;
+  estado: EstadoSolicitudCuenta;
+  observaciones: string | null;
+  resueltoPor: string | null;
+  fechaResolucion: string | null;
+  createdAt: string;
+}

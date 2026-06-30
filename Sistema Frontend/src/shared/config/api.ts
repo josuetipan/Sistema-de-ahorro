@@ -18,6 +18,15 @@ export const API_CONFIG = {
       aportes: '/ahorro/aportes',
       miInvitacion: '/ahorro/mi-invitacion',
       meta: '/ahorro/meta',
+      misSolicitudes: '/ahorro/mis-solicitudes',
+    },
+    admin: {
+      ahorro: {
+        aportes: '/admin/ahorro/aportes',
+        meta: '/admin/ahorro/meta',
+        socios: '/admin/ahorro/socios',
+        solicitudes: '/admin/ahorro/solicitudes',
+      },
     },
     usuarios: '/usuarios',
     cuentas: '/cuentas',
