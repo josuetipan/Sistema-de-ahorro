@@ -4,6 +4,8 @@ import { Input } from '@shared/ui/atoms/Input';
 import { NavIcon } from '@shared/ui/atoms/NavIcon';
 import { Select } from '@shared/ui/atoms/Select';
 import { Modal } from '@shared/ui/molecules/Modal';
+import { FormField } from '@shared/ui/molecules/FormField';
+import { Button } from '@shared/ui/atoms/Button';
 import { StatusBadge } from '@shared/ui/molecules/StatusBadge';
 import { Table, type TableColumn } from '@shared/ui/molecules/Table';
 import { TableActionButton, TableActions } from '@shared/ui/molecules/TableActions';
@@ -12,11 +14,19 @@ import {
   type CuentaSocioAdmin,
   type EstadoCuentaAhorroAdmin,
   type EstadoSocioAdmin,
+  type RoleCodeAdmin,
   type SocioAhorroAdmin,
 } from '../../infrastructure/api/admin-ahorro.api';
 import { useSociosAhorroAdmin } from '../../application/hooks/useSociosAhorroAdmin';
+import { useToast } from '@shared/hooks/useToast';
+import {
+  createAdminUser,
+  setAdminUserStatus,
+  updateAdminUser,
+} from '../../infrastructure/api/admin-users.api';
 
 const PAGE_SIZE = 5;
+type RoleCode = 'ADMIN' | 'CUSTOMER' | 'ACCOUNTANT';
 
 interface SociosFiltros {
   q: string;
@@ -25,6 +35,7 @@ interface SociosFiltros {
   nombre: string;
   email: string;
   identification: string;
+  roleCode: RoleCodeAdmin | '';
   cuentaEstado: EstadoCuentaAhorroAdmin | '';
 }
 
@@ -35,6 +46,7 @@ const EMPTY_FILTERS: SociosFiltros = {
   nombre: '',
   email: '',
   identification: '',
+  roleCode: '',
   cuentaEstado: '',
 };
 
@@ -44,12 +56,23 @@ function clean(value: string): string | undefined {
 }
 
 export function AdminSociosView() {
+  const toast = useToast();
   const [draftFilters, setDraftFilters] = useState<SociosFiltros>(EMPTY_FILTERS);
   const [filters, setFilters] = useState<SociosFiltros>(EMPTY_FILTERS);
   const [page, setPage] = useState(1);
   const [seleccionado, setSeleccionado] = useState<SocioAhorroAdmin | null>(null);
+  const [modalUsuario, setModalUsuario] = useState<SocioAhorroAdmin | null | false>(false);
+  const [formUsuario, setFormUsuario] = useState({
+    fullName: '',
+    identification: '',
+    email: '',
+    phoneNumber: '',
+    address: '',
+    password: '',
+    roleCode: 'CUSTOMER' as RoleCode,
+  });
 
-  const { socios, meta, cargando, error } = useSociosAhorroAdmin({
+  const { socios, meta, cargando, error, recargar } = useSociosAhorroAdmin({
     page,
     limit: PAGE_SIZE,
     q: clean(filters.q),
@@ -58,6 +81,7 @@ export function AdminSociosView() {
     nombre: clean(filters.nombre),
     email: clean(filters.email),
     identification: clean(filters.identification),
+    roleCode: filters.roleCode,
     cuentaEstado: filters.cuentaEstado,
   });
 
@@ -72,6 +96,77 @@ export function AdminSociosView() {
     setPage(1);
   };
 
+  const abrirCrearUsuario = () => {
+    setModalUsuario(null);
+    setFormUsuario({
+      fullName: '',
+      identification: '',
+      email: '',
+      phoneNumber: '',
+      address: '',
+      password: '',
+      roleCode: 'CUSTOMER',
+    });
+  };
+
+  const abrirEditarUsuario = (socio: SocioAhorroAdmin) => {
+    setModalUsuario(socio);
+    setFormUsuario({
+      fullName: socio.fullName,
+      identification: socio.identification,
+      email: socio.email,
+      phoneNumber: socio.phoneNumber,
+      address: '',
+      password: '',
+      roleCode: 'CUSTOMER',
+    });
+  };
+
+  const guardarUsuario = async () => {
+    if (
+      !formUsuario.fullName ||
+      !formUsuario.identification ||
+      !formUsuario.email ||
+      !formUsuario.phoneNumber ||
+      (!modalUsuario && !formUsuario.address)
+    ) {
+      toast.error('Completa los datos obligatorios.');
+      return;
+    }
+    try {
+      if (modalUsuario) {
+        await updateAdminUser(modalUsuario.userId, {
+          fullName: formUsuario.fullName,
+          identification: formUsuario.identification,
+          email: formUsuario.email,
+          phoneNumber: formUsuario.phoneNumber,
+        });
+        toast.success('Socio actualizado correctamente.');
+      } else {
+        if (!formUsuario.password) {
+          toast.error('La contraseña inicial es obligatoria.');
+          return;
+        }
+        await createAdminUser(formUsuario);
+        toast.success('Socio creado correctamente.');
+      }
+      setModalUsuario(false);
+      await recargar();
+    } catch {
+      toast.error('No se pudo guardar el socio.');
+    }
+  };
+
+  const cambiarEstadoUsuario = async (socio: SocioAhorroAdmin) => {
+    try {
+      await setAdminUserStatus(socio.userId, socio.estado === 'inactivo');
+      toast.success(socio.estado === 'inactivo' ? 'Socio activado.' : 'Socio desactivado.');
+      await recargar();
+    } catch {
+      toast.error('No se pudo cambiar el estado del socio.');
+    }
+  };
+
   const socioColumns: TableColumn<SocioAhorroAdmin>[] = [
     {
       key: 'fullName',
@@ -79,7 +174,7 @@ export function AdminSociosView() {
       render: (socio) => (
         <div className="min-w-[13rem]">
           <p className="font-medium text-slate-900">{socio.fullName}</p>
-          <p className="font-mono text-[11px] text-slate-500">{socio.codigo}</p>
+          <p className="font-mono text-[11px] text-slate-500">{socio.codigo ?? '-'}</p>
         </div>
       ),
     },
@@ -97,6 +192,16 @@ export function AdminSociosView() {
       key: 'identification',
       header: 'Identificacion',
       render: (socio) => <span className="font-mono text-xs">{socio.identification}</span>,
+    },
+    {
+      key: 'roleName',
+      header: 'Rol',
+      render: (socio) =>
+        socio.roleName || {
+          ADMIN: 'Administrador',
+          CUSTOMER: 'Cliente',
+          ACCOUNTANT: 'Contador',
+        }[socio.roleCode] || 'Sin rol',
     },
     {
       key: 'estado',
@@ -122,6 +227,12 @@ export function AdminSociosView() {
         <TableActions>
           <TableActionButton type="button" onClick={() => setSeleccionado(socio)}>
             Ver cuentas
+          </TableActionButton>
+          <TableActionButton type="button" onClick={() => abrirEditarUsuario(socio)}>
+            Editar
+          </TableActionButton>
+          <TableActionButton type="button" onClick={() => void cambiarEstadoUsuario(socio)}>
+            {socio.estado === 'inactivo' ? 'Activar' : 'Desactivar'}
           </TableActionButton>
         </TableActions>
       ),
@@ -173,6 +284,11 @@ export function AdminSociosView() {
   return (
     <div className="flex min-h-[calc(100dvh-14rem)] flex-col gap-4">
       <section className="rounded-lg border border-slate-200 bg-white">
+        <div className="flex justify-end border-b border-slate-100 p-4">
+          <ActionButton type="button" onClick={abrirCrearUsuario}>
+            + Crear usuario
+          </ActionButton>
+        </div>
         <div className="grid gap-3 border-b border-slate-100 p-4 lg:grid-cols-4">
           <div className="lg:col-span-2">
             <label htmlFor="socios-q" className="mb-1 block text-xs font-medium text-slate-600">
@@ -253,6 +369,19 @@ export function AdminSociosView() {
             }))}
             placeholder="Identificacion"
           />
+          <Select
+            aria-label="Rol"
+            value={draftFilters.roleCode}
+            onChange={(event) => setDraftFilters((current) => ({
+              ...current,
+              roleCode: event.target.value as RoleCodeAdmin | '',
+            }))}
+          >
+            <option value="">Todos los roles</option>
+            <option value="ADMIN">Administrador</option>
+            <option value="CUSTOMER">Cliente</option>
+            <option value="ACCOUNTANT">Contador</option>
+          </Select>
 
           <div className="flex flex-wrap items-center gap-2 lg:col-span-4">
             <ActionButton
@@ -263,6 +392,15 @@ export function AdminSociosView() {
               icon={<NavIcon name="search" size={15} />}
             >
               Consultar
+            </ActionButton>
+            <ActionButton
+              type="button"
+              variant="outline"
+              onClick={() => void recargar()}
+              disabled={cargando}
+              icon={<NavIcon name="refresh" size={15} />}
+            >
+              Recargar
             </ActionButton>
             <ActionButton type="button" variant="ghost" onClick={limpiarFiltros} disabled={cargando}>
               Limpiar
@@ -335,6 +473,62 @@ export function AdminSociosView() {
             />
           </div>
         )}
+      </Modal>
+
+      <Modal
+        isOpen={modalUsuario !== false}
+        onClose={() => setModalUsuario(false)}
+        title={modalUsuario ? 'Editar socio' : 'Crear usuario'}
+      >
+        <div className="space-y-4">
+          <FormField label="Nombre completo" htmlFor="socio-full-name" required>
+            <Input id="socio-full-name" value={formUsuario.fullName} onChange={(event) => setFormUsuario({ ...formUsuario, fullName: event.target.value })} />
+          </FormField>
+          <FormField label="Identificación" htmlFor="socio-identification" required>
+            <Input id="socio-identification" value={formUsuario.identification} onChange={(event) => setFormUsuario({ ...formUsuario, identification: event.target.value })} />
+          </FormField>
+          <FormField label="Correo" htmlFor="socio-email" required>
+            <Input id="socio-email" type="email" value={formUsuario.email} onChange={(event) => setFormUsuario({ ...formUsuario, email: event.target.value })} />
+          </FormField>
+          <FormField label="Teléfono" htmlFor="socio-phone" required>
+            <Input id="socio-phone" value={formUsuario.phoneNumber} onChange={(event) => setFormUsuario({ ...formUsuario, phoneNumber: event.target.value })} />
+          </FormField>
+          {!modalUsuario && (
+            <FormField label="Dirección" htmlFor="socio-address" required>
+              <Input
+                id="socio-address"
+                value={formUsuario.address}
+                onChange={(event) => setFormUsuario({ ...formUsuario, address: event.target.value })}
+                placeholder="Calle, número, ciudad"
+              />
+            </FormField>
+          )}
+          {!modalUsuario && (
+            <FormField label="Contraseña inicial" htmlFor="socio-password" required>
+              <Input id="socio-password" type="password" value={formUsuario.password} onChange={(event) => setFormUsuario({ ...formUsuario, password: event.target.value })} />
+            </FormField>
+          )}
+          {!modalUsuario && (
+            <FormField label="Rol" htmlFor="socio-role" required>
+              <Select
+                id="socio-role"
+                value={formUsuario.roleCode}
+                onChange={(event) => setFormUsuario({
+                  ...formUsuario,
+                  roleCode: event.target.value as RoleCode,
+                })}
+              >
+                <option value="ADMIN">Administrador</option>
+                <option value="CUSTOMER">Cliente</option>
+                <option value="ACCOUNTANT">Contador</option>
+              </Select>
+            </FormField>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setModalUsuario(false)}>Cancelar</Button>
+            <ActionButton type="button" onClick={() => void guardarUsuario()}>{modalUsuario ? 'Guardar' : 'Crear'}</ActionButton>
+          </div>
+        </div>
       </Modal>
     </div>
   );

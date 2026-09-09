@@ -6,10 +6,11 @@ export interface CuentaResumen {
   estado: string;
   saldo: number;
   saldoDisponible: number;
+  metaMensual: number;
+  periodoMeses: number;
   saldoPendiente: number;
   /** Progreso del mes expresado como porcentaje (0-100). */
   progresoMes: number;
-  metaMensual: number;
   metaCumplida: boolean;
 }
 
@@ -34,6 +35,8 @@ export interface CrearCuentaInput {
   moneda: string;
   color: string;
   icono: string;
+  metaMensual: number;
+  periodoMeses: number;
 }
 
 /** Aporte mensual de una cuenta de ahorro. */
@@ -80,6 +83,7 @@ export interface CalendarioAhorro {
   anio: number;
   totalAhorrado: number;
   mesesCumplidos: number;
+  periodoMeses: number;
   metaMensual: number;
   metaMinima: number;
   metaMaxima: number;

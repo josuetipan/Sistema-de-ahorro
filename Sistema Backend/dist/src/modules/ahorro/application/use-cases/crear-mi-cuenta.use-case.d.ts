@@ -7,6 +7,8 @@ export interface CrearMiCuentaInput {
     moneda?: string;
     color?: string | null;
     icono?: string | null;
+    metaMensual?: number;
+    periodoMeses?: number;
 }
 export interface CrearMiCuentaResult {
     socioId: string;

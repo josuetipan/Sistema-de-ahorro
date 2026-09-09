@@ -1,10 +1,13 @@
 import { Transform } from 'class-transformer';
 import {
   IsIn,
+  IsNumber,
   IsOptional,
   IsString,
   Length,
   MaxLength,
+  Min,
+  Max,
   MinLength,
 } from 'class-validator';
 import type { TipoCuenta } from '@prisma/client';
@@ -39,4 +42,15 @@ export class CrearCuentaHttpDto {
   @IsString()
   @MaxLength(40)
   icono?: string;
+
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 }, { message: 'metaMensual debe ser numérica' })
+  @Min(1, { message: 'La meta mensual debe ser mayor que cero' })
+  metaMensual!: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'periodoMeses debe ser numérico' })
+  @Min(1, { message: 'El período debe ser de al menos 1 mes' })
+  @Max(120, { message: 'El período no puede superar 120 meses' })
+  periodoMeses!: number;
 }

@@ -30,7 +30,11 @@ function getResetErrorMessage(error: unknown): string {
 
 type FieldName = 'currentPassword' | 'newPassword' | 'confirmPassword';
 
-export function ResetPasswordForm() {
+interface ResetPasswordFormProps {
+  logoutAfterSuccess?: boolean;
+}
+
+export function ResetPasswordForm({ logoutAfterSuccess = true }: ResetPasswordFormProps) {
   const { resetPassword, isSubmitting } = useResetPassword();
   const { logout } = useAuth();
   const toast = useToast();
@@ -55,8 +59,10 @@ export function ResetPasswordForm() {
     try {
       const result = await resetPassword(data);
       toast.success(result.message || 'Contraseña actualizada correctamente.');
-      logout();
-      navigate(ROUTES.LOGIN, { replace: true });
+      if (logoutAfterSuccess) {
+        logout();
+        navigate(ROUTES.LOGIN, { replace: true });
+      }
     } catch (error) {
       toast.error(getResetErrorMessage(error));
       setFocus('currentPassword');

@@ -95,6 +95,51 @@ let PrismaUserRepository = class PrismaUserRepository {
             data: { last_login: new Date() },
         });
     }
+    toAdminRecord(row) {
+        return {
+            id: row.id_user,
+            usuario: row.usuario,
+            email: row.email,
+            fullName: row.full_name,
+            identification: row.identification,
+            phoneNumber: row.phone_number,
+            roleCode: row.role.code_role,
+            roleName: row.role.name,
+            isActive: row.is_active,
+            lastLogin: row.last_login,
+            createdAt: row.createdAt,
+        };
+    }
+    async listForAdmin() {
+        const rows = await this.prisma.user.findMany({
+            include: userInclude,
+            orderBy: { createdAt: 'desc' },
+        });
+        return rows.map((row) => this.toAdminRecord(row));
+    }
+    async updateForAdmin(input) {
+        const row = await this.prisma.user.update({
+            where: { id_user: input.id },
+            data: {
+                ...(input.fullName === undefined ? {} : { full_name: input.fullName }),
+                ...(input.email === undefined ? {} : { email: input.email }),
+                ...(input.identification === undefined ? {} : { identification: input.identification }),
+                ...(input.phoneNumber === undefined ? {} : { phone_number: input.phoneNumber }),
+                ...(input.roleId === undefined ? {} : { role_id: input.roleId }),
+                ...(input.address === undefined ? {} : { address: input.address }),
+            },
+            include: userInclude,
+        });
+        return this.toAdminRecord(row);
+    }
+    async setActiveForAdmin(id, isActive) {
+        const row = await this.prisma.user.update({
+            where: { id_user: id },
+            data: { is_active: isActive },
+            include: userInclude,
+        });
+        return this.toAdminRecord(row);
+    }
 };
 exports.PrismaUserRepository = PrismaUserRepository;
 exports.PrismaUserRepository = PrismaUserRepository = __decorate([

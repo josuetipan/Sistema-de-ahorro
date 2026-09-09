@@ -10,6 +10,8 @@ import { LoginUserHttpDto } from '../dto/login-user.http.dto';
 import { RefreshTokenHttpDto } from '../dto/refresh-token.http.dto';
 import { ChangePasswordHttpDto } from '../dto/change-password.http.dto';
 import { SetUserPasswordHttpDto } from '../dto/set-user-password.http.dto';
+import { UpdateOwnProfileHttpDto } from '../dto/update-own-profile.http.dto';
+import { type UserRepositoryPort } from '../../domain/ports/user.repository.port';
 export declare class AuthController {
     private readonly registerUser;
     private readonly loginUser;
@@ -17,7 +19,8 @@ export declare class AuthController {
     private readonly logoutUser;
     private readonly changePassword;
     private readonly setUserPassword;
-    constructor(registerUser: RegisterUserUseCase, loginUser: LoginUserUseCase, refreshSession: RefreshSessionUseCase, logoutUser: LogoutUserUseCase, changePassword: ChangePasswordUseCase, setUserPassword: SetUserPasswordUseCase);
+    private readonly users;
+    constructor(registerUser: RegisterUserUseCase, loginUser: LoginUserUseCase, refreshSession: RefreshSessionUseCase, logoutUser: LogoutUserUseCase, changePassword: ChangePasswordUseCase, setUserPassword: SetUserPasswordUseCase, users: UserRepositoryPort);
     register(body: RegisterUserHttpDto): Promise<{
         id: string;
         usuario: string;
@@ -64,6 +67,7 @@ export declare class AuthController {
         cityName: string;
         roles: string[];
     };
+    updateMe(caller: AuthUserPayload, body: UpdateOwnProfileHttpDto): Promise<import("../../domain/ports/user.repository.port").AdminUserRecord>;
     adminHealth(user: AuthUserPayload): {
         ok: boolean;
         checkedBy: string;

@@ -43,6 +43,8 @@ export declare class AhorroController {
         nombre: string;
         tipo: string;
         estado: string;
+        metaMensual: number;
+        periodoMeses: number;
         moneda: string;
         saldo: number;
         saldoDisponible: number;

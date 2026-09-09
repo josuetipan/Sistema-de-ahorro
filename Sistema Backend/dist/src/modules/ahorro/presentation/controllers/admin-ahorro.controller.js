@@ -172,13 +172,17 @@ let AdminAhorroController = AdminAhorroController_1 = class AdminAhorroControlle
             throw this.mapError(err);
         }
     }
-    async socios(page, limit, q, estado, codigo, nombre, email, identification, cuentaEstado) {
+    async socios(page, limit, q, estado, codigo, nombre, email, identification, roleCode, cuentaEstado) {
         if (estado && !ESTADOS_SOCIO.includes(estado)) {
             throw new common_1.BadRequestException(`estado debe ser uno de: ${ESTADOS_SOCIO.join(', ')}`);
         }
         if (cuentaEstado &&
             !ESTADOS_CUENTA.includes(cuentaEstado)) {
             throw new common_1.BadRequestException(`cuentaEstado debe ser uno de: ${ESTADOS_CUENTA.join(', ')}`);
+        }
+        const roles = Object.values(user_role_1.UserRole);
+        if (roleCode && !roles.includes(roleCode)) {
+            throw new common_1.BadRequestException(`roleCode debe ser uno de: ${roles.join(', ')}`);
         }
         const pagination = (0, parse_pagination_1.parsePagination)(page, limit);
         return this.listarSocios.execute({
@@ -190,6 +194,7 @@ let AdminAhorroController = AdminAhorroController_1 = class AdminAhorroControlle
             nombre: cleanQueryParam(nombre),
             email: cleanQueryParam(email),
             identification: cleanQueryParam(identification),
+            roleCode: cleanQueryParam(roleCode),
             cuentaEstado: cuentaEstado,
         });
     }
@@ -357,9 +362,10 @@ __decorate([
     __param(5, (0, common_1.Query)('nombre')),
     __param(6, (0, common_1.Query)('email')),
     __param(7, (0, common_1.Query)('identification')),
-    __param(8, (0, common_1.Query)('cuentaEstado')),
+    __param(8, (0, common_1.Query)('roleCode')),
+    __param(9, (0, common_1.Query)('cuentaEstado')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], AdminAhorroController.prototype, "socios", null);
 __decorate([

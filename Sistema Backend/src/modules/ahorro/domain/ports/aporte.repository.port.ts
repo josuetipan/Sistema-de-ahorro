@@ -35,6 +35,7 @@ export interface AporteComprobante {
 }
 
 export interface AporteAdminItem extends AporteListItem {
+  urlArchivo: string;
   numeroCuenta: string;
   cuentaNombre: string;
   socioId: string;

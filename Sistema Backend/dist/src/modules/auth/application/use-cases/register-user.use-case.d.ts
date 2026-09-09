@@ -9,6 +9,7 @@ export interface RegisterUserInput {
     identification: string;
     email: string;
     phoneNumber: string;
+    address?: string;
     roleCode: UserRoleName;
     codigoReferencia?: string;
     password?: string;

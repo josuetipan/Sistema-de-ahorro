@@ -41,6 +41,7 @@ import { ChangePasswordUseCase } from './application/use-cases/change-password.u
 import { SetUserPasswordUseCase } from './application/use-cases/set-user-password.use-case';
 import { CreateRoleUseCase } from './application/use-cases/create-role.use-case';
 import { CreateAdminUserUseCase } from './application/use-cases/create-admin-user.use-case';
+import { ManageAdminUsersUseCase } from './application/use-cases/manage-admin-users.use-case';
 import { PrismaUserRepository } from './infrastructure/persistence/prisma/prisma-user.repository';
 import { PrismaRoleRepository } from './infrastructure/persistence/prisma/prisma-role.repository';
 import { PrismaCityRepository } from './infrastructure/persistence/prisma/prisma-city.repository';
@@ -55,6 +56,7 @@ import { RolesGuard } from './infrastructure/auth/roles.guard';
 import { AuthController } from './presentation/controllers/auth.controller';
 import { RoleController } from './presentation/controllers/role.controller';
 import { AdminController } from './presentation/controllers/admin.controller';
+import { AdminUsersController } from './presentation/controllers/admin-users.controller';
 
 @Module({
   imports: [
@@ -63,7 +65,7 @@ import { AdminController } from './presentation/controllers/admin.controller';
       secret: getJwtAccessSecret(),
     }),
   ],
-  controllers: [AuthController, RoleController, AdminController],
+  controllers: [AuthController, RoleController, AdminController, AdminUsersController],
   providers: [
     PrismaUserRepository,
     PrismaRoleRepository,
@@ -185,6 +187,12 @@ import { AdminController } from './presentation/controllers/admin.controller';
         CITY_REPOSITORY,
         ADMIN_USER_PROVISIONING,
       ],
+    },
+    {
+      provide: ManageAdminUsersUseCase,
+      useFactory: (users: UserRepositoryPort, roles: RoleRepositoryPort) =>
+        new ManageAdminUsersUseCase(users, roles),
+      inject: [USER_REPOSITORY, ROLE_REPOSITORY],
     },
   ],
   exports: [RolesGuard, JwtAccessStrategy, USER_REPOSITORY],

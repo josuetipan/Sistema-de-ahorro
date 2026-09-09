@@ -7,6 +7,8 @@ export interface CuentaResumen {
     nombre: string;
     tipo: string;
     estado: string;
+    metaMensual: number;
+    periodoMeses: number;
     moneda: string;
     saldo: number;
     saldoDisponible: number;
@@ -23,6 +25,8 @@ export interface CuentaOwnership {
     userId: string;
     saldo: number;
     estado: string;
+    metaMensual: number;
+    periodoMeses: number;
 }
 export interface CrearCuentaInput {
     socioId: string;
@@ -31,12 +35,16 @@ export interface CrearCuentaInput {
     moneda?: string;
     color?: string | null;
     icono?: string | null;
+    metaMensual?: number;
+    periodoMeses?: number;
 }
 export interface SocioAhorroResumen {
-    idSocio: string;
-    codigo: string;
+    idSocio: string | null;
+    codigo: string | null;
     estado: string;
     userId: string;
+    roleCode: string;
+    roleName: string;
     fullName: string;
     email: string | null;
     identification: string | null;
@@ -54,6 +62,7 @@ export interface ListSociosCustomerParams {
     nombre?: string;
     email?: string;
     identification?: string;
+    roleCode?: string;
     cuentaEstado?: EstadoCuenta;
 }
 export interface CuentaRepositoryPort {

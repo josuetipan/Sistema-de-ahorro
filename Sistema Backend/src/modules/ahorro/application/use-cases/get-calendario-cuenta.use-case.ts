@@ -44,6 +44,7 @@ export interface CalendarioResult {
   anio: number;
   totalAhorrado: number;
   mesesCumplidos: number;
+  periodoMeses: number;
   metaMensual: number;
   metaMinima: number;
   metaMaxima: number;
@@ -85,10 +86,15 @@ export class GetCalendarioCuentaUseCase
     );
     const porMes = new Map(aportes.map((a) => [a.mes, a]));
 
+    const inicio = new Date(cuenta.fechaApertura);
+    const inicioMes = inicio.getUTCFullYear() * 12 + inicio.getUTCMonth();
+    const finMes = inicioMes + cuenta.periodoMeses - 1;
     const meses: CalendarioMes[] = [];
     let mesesCumplidos = 0;
     for (let m = 1; m <= 12; m += 1) {
       const mesKey = `${input.anio}-${String(m).padStart(2, '0')}`;
+      const mesIndice = input.anio * 12 + (m - 1);
+      if (mesIndice < inicioMes || mesIndice > finMes) continue;
       const aporte = porMes.get(mesKey);
       const cumplido = aporte?.estado === 'verificado';
       if (cumplido) {
@@ -97,9 +103,7 @@ export class GetCalendarioCuentaUseCase
       meses.push({
         mes: mesKey,
         numeroMes: m,
-        // La meta es GLOBAL: siempre se usa la meta vigente, no el snapshot
-        // histórico del aporte.
-        metaMensual: meta.metaMensual,
+        metaMensual: cuenta.metaMensual,
         metaMinima: meta.metaMinima,
         metaMaxima: meta.metaMaxima,
         montoAportado: aporte?.monto ?? 0,
@@ -117,7 +121,8 @@ export class GetCalendarioCuentaUseCase
       anio: input.anio,
       totalAhorrado: cuenta.saldo,
       mesesCumplidos,
-      metaMensual: meta.metaMensual,
+      periodoMeses: cuenta.periodoMeses,
+      metaMensual: cuenta.metaMensual,
       metaMinima: meta.metaMinima,
       metaMaxima: meta.metaMaxima,
       meses,

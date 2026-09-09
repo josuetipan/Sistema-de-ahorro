@@ -243,6 +243,30 @@ export function AdminDashboardView() {
             >
               Consultar
             </ActionButton>
+            <ActionButton
+              type="button"
+              size="sm"
+              variant={estado === 'verificado' ? 'primary' : 'outline'}
+              onClick={() => {
+                setEstado('verificado');
+                setPage(1);
+              }}
+              disabled={cargando}
+            >
+              Aprobados
+            </ActionButton>
+            <ActionButton
+              type="button"
+              size="sm"
+              variant={estado === 'rechazado' ? 'danger' : 'outline'}
+              onClick={() => {
+                setEstado('rechazado');
+                setPage(1);
+              }}
+              disabled={cargando}
+            >
+              Rechazados
+            </ActionButton>
             <p className="text-xs text-slate-500">
               {cargando
                 ? 'Cargando aportes...'
@@ -254,6 +278,22 @@ export function AdminDashboardView() {
         </div>
 
         <div className="min-h-0 flex-1 overflow-auto">
+          <div className="border-b border-slate-100 px-4 py-3">
+            <h2 className="text-sm font-semibold text-slate-900">
+              {estado === 'pendiente'
+                ? 'Pagos pendientes de revisión'
+                : estado === 'verificado'
+                  ? 'Historial de pagos aprobados'
+                  : estado === 'rechazado'
+                    ? 'Historial de pagos rechazados'
+                    : 'Historial de pagos'}
+            </h2>
+            {estado !== 'pendiente' && (
+              <p className="mt-1 text-xs text-slate-500">
+                Consulta los comprobantes y observaciones de pagos ya revisados.
+              </p>
+            )}
+          </div>
           <Table
             columns={columns}
             data={aportes}

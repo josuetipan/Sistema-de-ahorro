@@ -81,8 +81,8 @@ export class GetResumenAhorroUseCase
         saldoDisponible: cuenta.saldoDisponible,
         saldoPendiente,
         progresoMes,
-        metaMensual: meta.metaMensual,
-        metaCumplida: progresoMes >= meta.metaMensual && meta.metaMensual > 0,
+        metaMensual: cuenta.metaMensual,
+        metaCumplida: progresoMes >= cuenta.metaMensual && cuenta.metaMensual > 0,
       };
     });
 

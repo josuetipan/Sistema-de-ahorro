@@ -37,6 +37,7 @@ export class CuentaMockAdapter implements ICuentaRepository {
         saldoPendiente: 0,
         progresoMes: 0,
         metaMensual: c.metaMensual,
+        periodoMeses: 12,
         metaCumplida: false,
       })),
     };
@@ -97,6 +98,7 @@ export class CuentaMockAdapter implements ICuentaRepository {
       anio,
       totalAhorrado: 0,
       mesesCumplidos: 0,
+      periodoMeses: 12,
       metaMensual: 0,
       metaMinima: 0,
       metaMaxima: 0,

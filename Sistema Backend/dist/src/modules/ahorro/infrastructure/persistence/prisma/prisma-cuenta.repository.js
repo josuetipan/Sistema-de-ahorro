@@ -32,6 +32,8 @@ function toResumen(row) {
         moneda: row.moneda,
         saldo,
         saldoDisponible: num(row.saldoDisponible),
+        metaMensual: num(row.metaMensual),
+        periodoMeses: row.periodoMeses,
         totalAhorrado: saldo,
         totalDepositos: num(row.totalDepositos),
         totalRetiros: num(row.totalRetiros),
@@ -73,6 +75,8 @@ let PrismaCuentaRepository = class PrismaCuentaRepository {
                 moneda: input.moneda ?? undefined,
                 color: input.color ?? null,
                 icono: input.icono ?? null,
+                metaMensual: input.metaMensual ?? 500,
+                periodoMeses: input.periodoMeses ?? 12,
             },
         });
         return toResumen(row);
@@ -105,6 +109,8 @@ let PrismaCuentaRepository = class PrismaCuentaRepository {
                 id_cuenta: true,
                 socio_id: true,
                 saldo: true,
+                metaMensual: true,
+                periodoMeses: true,
                 estado: true,
                 socio: { select: { user_id: true } },
             },
@@ -118,6 +124,8 @@ let PrismaCuentaRepository = class PrismaCuentaRepository {
             userId: row.socio.user_id,
             saldo: num(row.saldo),
             estado: row.estado,
+            metaMensual: num(row.metaMensual),
+            periodoMeses: row.periodoMeses,
         };
     }
     async findResumenById(cuentaId) {
@@ -127,17 +135,22 @@ let PrismaCuentaRepository = class PrismaCuentaRepository {
         return row ? toResumen(row) : null;
     }
     async listSociosCustomer(params) {
-        const where = {
-            user: { role: { code_role: 'CUSTOMER' } },
-        };
+        const where = {};
+        if (params.roleCode) {
+            where.role = { code_role: params.roleCode };
+        }
+        const socioFilters = {};
         if (params.estado) {
-            where.estado = params.estado;
+            socioFilters.estado = params.estado;
         }
         if (params.codigo) {
-            where.codigo = { contains: params.codigo, mode: 'insensitive' };
+            socioFilters.codigo = { contains: params.codigo, mode: 'insensitive' };
         }
         if (params.cuentaEstado) {
-            where.cuentas = { some: { estado: params.cuentaEstado } };
+            socioFilters.cuentas = { some: { estado: params.cuentaEstado } };
+        }
+        if (Object.keys(socioFilters).length > 0) {
+            where.socio = socioFilters;
         }
         const userFilters = [];
         if (params.nombre) {
@@ -158,67 +171,55 @@ let PrismaCuentaRepository = class PrismaCuentaRepository {
                 },
             });
         }
+        if (userFilters.length > 0) {
+            where.AND = userFilters;
+        }
         const search = params.q;
         if (search) {
             where.OR = [
-                { codigo: { contains: search, mode: 'insensitive' } },
-                { user: { full_name: { contains: search, mode: 'insensitive' } } },
-                { user: { email: { contains: search, mode: 'insensitive' } } },
+                { full_name: { contains: search, mode: 'insensitive' } },
+                { email: { contains: search, mode: 'insensitive' } },
+                { identification: { contains: search, mode: 'insensitive' } },
+                { phone_number: { contains: search, mode: 'insensitive' } },
+                { socio: { codigo: { contains: search, mode: 'insensitive' } } },
                 {
-                    user: {
-                        identification: { contains: search, mode: 'insensitive' },
-                    },
-                },
-                {
-                    user: {
-                        phone_number: { contains: search, mode: 'insensitive' },
-                    },
-                },
-                {
-                    cuentas: {
-                        some: {
-                            OR: [
-                                {
-                                    numeroCuenta: {
-                                        contains: search,
-                                        mode: 'insensitive',
-                                    },
-                                },
-                                { nombre: { contains: search, mode: 'insensitive' } },
-                            ],
+                    socio: {
+                        cuentas: {
+                            some: {
+                                OR: [
+                                    { numeroCuenta: { contains: search, mode: 'insensitive' } },
+                                    { nombre: { contains: search, mode: 'insensitive' } },
+                                ],
+                            },
                         },
                     },
                 },
             ];
         }
-        if (userFilters.length > 0) {
-            where.user = {
-                role: { code_role: 'CUSTOMER' },
-                AND: userFilters,
-            };
-        }
         const [socios, total] = await this.prisma.$transaction([
-            this.prisma.socio.findMany({
+            this.prisma.user.findMany({
                 where,
-                include: { user: true, cuentas: { orderBy: { fechaApertura: 'asc' } } },
+                include: { role: true, socio: { include: { cuentas: { orderBy: { fechaApertura: 'asc' } } } } },
                 orderBy: { createdAt: 'desc' },
                 skip: (params.page - 1) * params.limit,
                 take: params.limit,
             }),
-            this.prisma.socio.count({ where }),
+            this.prisma.user.count({ where }),
         ]);
-        const items = socios.map((socio) => {
-            const cuentas = socio.cuentas.map(toResumen);
+        const items = socios.map((user) => {
+            const cuentas = user.socio?.cuentas.map(toResumen) ?? [];
             const totalAhorrado = cuentas.reduce((acc, c) => acc + c.saldo, 0);
             return {
-                idSocio: socio.id_socio,
-                codigo: socio.codigo,
-                estado: socio.estado,
-                userId: socio.user_id,
-                fullName: socio.user.full_name,
-                email: socio.user.email,
-                identification: socio.user.identification,
-                phoneNumber: socio.user.phone_number,
+                idSocio: user.socio?.id_socio ?? null,
+                codigo: user.socio?.codigo ?? null,
+                estado: user.socio?.estado ?? (user.is_active ? 'activo' : 'inactivo'),
+                userId: user.id_user,
+                roleCode: user.role.code_role,
+                roleName: user.role.name,
+                fullName: user.full_name,
+                email: user.email,
+                identification: user.identification,
+                phoneNumber: user.phone_number,
                 totalAhorrado,
                 cantidadCuentas: cuentas.length,
                 cuentas,
@@ -229,7 +230,10 @@ let PrismaCuentaRepository = class PrismaCuentaRepository {
     async getSocioCustomer(socioId) {
         const socio = await this.prisma.socio.findUnique({
             where: { id_socio: socioId },
-            include: { user: true, cuentas: { orderBy: { fechaApertura: 'asc' } } },
+            include: {
+                user: { include: { role: true } },
+                cuentas: { orderBy: { fechaApertura: 'asc' } },
+            },
         });
         if (!socio) {
             return null;
@@ -241,6 +245,8 @@ let PrismaCuentaRepository = class PrismaCuentaRepository {
             codigo: socio.codigo,
             estado: socio.estado,
             userId: socio.user_id,
+            roleCode: socio.user.role.code_role,
+            roleName: socio.user.role.name,
             fullName: socio.user.full_name,
             email: socio.user.email,
             identification: socio.user.identification,

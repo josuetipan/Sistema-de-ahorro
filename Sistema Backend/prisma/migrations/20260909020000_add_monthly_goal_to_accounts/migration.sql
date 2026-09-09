@@ -1,0 +1,2 @@
+ALTER TABLE "cuentas"
+ADD COLUMN "meta_mensual" DECIMAL(14, 2) NOT NULL DEFAULT 500;

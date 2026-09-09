@@ -6,7 +6,7 @@ import type { BackendUser, LoginResponseBody } from '../dtos/auth.dto';
 function mapRol(roles: string[]): Rol {
   const normalizados = roles.map((r) => r.toUpperCase());
   if (normalizados.includes('ADMIN')) return 'admin';
-  if (normalizados.includes('OPERATOR')) return 'operador';
+  if (normalizados.includes('ACCOUNTANT')) return 'contador';
   if (normalizados.includes('CUSTOMER')) return 'cliente';
   return 'cliente';
 }

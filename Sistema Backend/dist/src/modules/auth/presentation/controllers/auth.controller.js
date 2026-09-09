@@ -40,6 +40,8 @@ const login_user_http_dto_1 = require("../dto/login-user.http.dto");
 const refresh_token_http_dto_1 = require("../dto/refresh-token.http.dto");
 const change_password_http_dto_1 = require("../dto/change-password.http.dto");
 const set_user_password_http_dto_1 = require("../dto/set-user-password.http.dto");
+const update_own_profile_http_dto_1 = require("../dto/update-own-profile.http.dto");
+const user_repository_port_1 = require("../../domain/ports/user.repository.port");
 let AuthController = class AuthController {
     registerUser;
     loginUser;
@@ -47,13 +49,15 @@ let AuthController = class AuthController {
     logoutUser;
     changePassword;
     setUserPassword;
-    constructor(registerUser, loginUser, refreshSession, logoutUser, changePassword, setUserPassword) {
+    users;
+    constructor(registerUser, loginUser, refreshSession, logoutUser, changePassword, setUserPassword, users) {
         this.registerUser = registerUser;
         this.loginUser = loginUser;
         this.refreshSession = refreshSession;
         this.logoutUser = logoutUser;
         this.changePassword = changePassword;
         this.setUserPassword = setUserPassword;
+        this.users = users;
     }
     async register(body) {
         return this.handleRegisterUser(body);
@@ -65,6 +69,7 @@ let AuthController = class AuthController {
                 identification: body.identification,
                 email: body.email,
                 phoneNumber: body.phoneNumber,
+                address: body.address,
                 roleCode: body.roleCode,
                 codigoReferencia: body.codigoReferencia,
                 password: body.password,
@@ -176,6 +181,15 @@ let AuthController = class AuthController {
             roles: user.roles,
         };
     }
+    async updateMe(caller, body) {
+        return this.users.updateForAdmin({
+            id: caller.id,
+            fullName: body.fullName,
+            email: body.email,
+            phoneNumber: body.phoneNumber,
+            address: body.address,
+        });
+    }
     adminHealth(user) {
         return { ok: true, checkedBy: user.usuario };
     }
@@ -243,6 +257,15 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "me", null);
 __decorate([
+    (0, common_1.Patch)('me'),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, update_own_profile_http_dto_1.UpdateOwnProfileHttpDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "updateMe", null);
+__decorate([
     (0, common_1.Get)('admin/health'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(user_role_1.UserRole.ADMIN),
@@ -253,11 +276,12 @@ __decorate([
 ], AuthController.prototype, "adminHealth", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)('auth'),
+    __param(6, (0, common_1.Inject)(user_repository_port_1.USER_REPOSITORY)),
     __metadata("design:paramtypes", [register_user_use_case_1.RegisterUserUseCase,
         login_user_use_case_1.LoginUserUseCase,
         refresh_session_use_case_1.RefreshSessionUseCase,
         logout_user_use_case_1.LogoutUserUseCase,
         change_password_use_case_1.ChangePasswordUseCase,
-        set_user_password_use_case_1.SetUserPasswordUseCase])
+        set_user_password_use_case_1.SetUserPasswordUseCase, Object])
 ], AuthController);
 //# sourceMappingURL=auth.controller.js.map

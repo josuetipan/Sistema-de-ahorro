@@ -15,6 +15,7 @@ export interface CuentaResumenDTO {
   saldoPendiente: number;
   progresoMes: number;
   metaMensual: number;
+  periodoMeses?: number;
   metaCumplida: boolean;
 }
 
@@ -87,6 +88,7 @@ export interface CalendarioAhorroDTO {
   anio: number;
   totalAhorrado: number;
   mesesCumplidos: number;
+  periodoMeses: number;
   metaMensual: number;
   metaMinima: number;
   metaMaxima: number;
@@ -99,6 +101,8 @@ export interface CrearCuentaRequest {
   moneda: string;
   color: string;
   icono: string;
+  metaMensual: number;
+  periodoMeses: number;
 }
 
 /** Body de POST /ahorro/cuentas. */

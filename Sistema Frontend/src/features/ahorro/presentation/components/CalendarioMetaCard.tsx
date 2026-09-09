@@ -56,7 +56,7 @@ export function CalendarioMetaCard({
       title={`Calendario ${anio}`}
       subtitle={
         calendario
-          ? `${calendario.mesesCumplidos} de 12 meses cumplidos · Meta ${formatCurrency(
+          ? `${calendario.mesesCumplidos} de ${calendario.periodoMeses} meses cumplidos · Meta ${formatCurrency(
               calendario.metaMensual,
               'USD',
             )}/mes · Total ahorrado ${formatCurrency(calendario.totalAhorrado, 'USD')}`

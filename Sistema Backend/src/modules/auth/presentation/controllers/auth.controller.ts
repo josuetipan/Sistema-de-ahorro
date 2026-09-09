@@ -6,9 +6,11 @@ import {
   ForbiddenException,
   Get,
   HttpCode,
+  Inject,
   InternalServerErrorException,
   NotFoundException,
   Post,
+  Patch,
   Put,
   UnauthorizedException,
   UseGuards,
@@ -42,6 +44,11 @@ import { LoginUserHttpDto } from '../dto/login-user.http.dto';
 import { RefreshTokenHttpDto } from '../dto/refresh-token.http.dto';
 import { ChangePasswordHttpDto } from '../dto/change-password.http.dto';
 import { SetUserPasswordHttpDto } from '../dto/set-user-password.http.dto';
+import { UpdateOwnProfileHttpDto } from '../dto/update-own-profile.http.dto';
+import {
+  USER_REPOSITORY,
+  type UserRepositoryPort,
+} from '../../domain/ports/user.repository.port';
 
 @Controller('auth')
 export class AuthController {
@@ -52,6 +59,7 @@ export class AuthController {
     private readonly logoutUser: LogoutUserUseCase,
     private readonly changePassword: ChangePasswordUseCase,
     private readonly setUserPassword: SetUserPasswordUseCase,
+    @Inject(USER_REPOSITORY) private readonly users: UserRepositoryPort,
   ) {}
 
   /**
@@ -72,6 +80,7 @@ export class AuthController {
         identification: body.identification,
         email: body.email,
         phoneNumber: body.phoneNumber,
+        address: body.address,
         roleCode: body.roleCode,
         codigoReferencia: body.codigoReferencia,
         password: body.password,
@@ -207,6 +216,21 @@ export class AuthController {
       cityName: user.cityName,
       roles: user.roles,
     };
+  }
+
+  @Patch('me')
+  @UseGuards(AuthGuard('jwt'))
+  async updateMe(
+    @CurrentUser() caller: AuthUserPayload,
+    @Body() body: UpdateOwnProfileHttpDto,
+  ) {
+    return this.users.updateForAdmin({
+      id: caller.id,
+      fullName: body.fullName,
+      email: body.email,
+      phoneNumber: body.phoneNumber,
+      address: body.address,
+    });
   }
 
   @Get('admin/health')

@@ -31,6 +31,7 @@ let ListarSociosAhorroUseCase = class ListarSociosAhorroUseCase {
             nombre: input.nombre,
             email: input.email,
             identification: input.identification,
+            roleCode: input.roleCode,
             cuentaEstado: input.cuentaEstado,
         });
         return (0, pagination_1.paginate)(items, total, input.page, input.limit);

@@ -96,6 +96,8 @@ let AhorroController = AhorroController_1 = class AhorroController {
                 moneda: body.moneda,
                 color: body.color ?? null,
                 icono: body.icono ?? null,
+                metaMensual: body.metaMensual,
+                periodoMeses: body.periodoMeses,
             });
             return {
                 ...cuenta,

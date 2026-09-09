@@ -14,6 +14,8 @@ export interface CrearMiCuentaInput {
   moneda?: string;
   color?: string | null;
   icono?: string | null;
+  metaMensual?: number;
+  periodoMeses?: number;
 }
 
 export interface CrearMiCuentaResult {
@@ -42,6 +44,8 @@ export class CrearMiCuentaUseCase
       moneda: input.moneda,
       color: input.color ?? null,
       icono: input.icono ?? null,
+      metaMensual: input.metaMensual,
+      periodoMeses: input.periodoMeses,
     });
     return { socioId, cuenta };
   }

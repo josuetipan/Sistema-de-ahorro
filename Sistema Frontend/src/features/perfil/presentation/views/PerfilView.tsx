@@ -8,6 +8,8 @@ import { ActionButton } from '@shared/ui/atoms/ActionButton';
 import { useAuth } from '@shared/hooks/useAuth';
 import { useToast } from '@shared/hooks/useToast';
 import { perfilSchema, type PerfilFormData } from '@shared/lib/validators';
+import { patchOwnProfile } from '@features/auth/infrastructure/api/auth.api';
+import { ResetPasswordForm } from '@features/auth/presentation/components/ResetPasswordForm';
 
 export function PerfilView() {
   const { user, setUser } = useAuth();
@@ -23,8 +25,12 @@ export function PerfilView() {
   });
 
   const guardarPerfil = async (data: PerfilFormData) => {
-    await new Promise((r) => setTimeout(r, 400));
     if (user) {
+      await patchOwnProfile({
+        email: data.email,
+        phoneNumber: data.telefono,
+        address: data.direccion,
+      });
       setUser({
         ...user,
         email: data.email,
@@ -99,6 +105,12 @@ export function PerfilView() {
           </form>
         </SectionCard>
       </div>
+      <SectionCard
+        title="Cambiar contraseña"
+        subtitle="Actualiza la contraseña de tu cuenta usando tu contraseña actual."
+      >
+        <ResetPasswordForm logoutAfterSuccess={false} />
+      </SectionCard>
     </div>
   );
 }

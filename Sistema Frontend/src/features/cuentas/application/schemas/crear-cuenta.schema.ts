@@ -19,6 +19,8 @@ export const crearCuentaSchema = z.object({
     .string()
     .min(2, 'El nombre debe tener al menos 2 caracteres')
     .max(50, 'El nombre no puede superar los 50 caracteres'),
+  metaMensual: z.coerce.number().positive('La meta debe ser mayor que cero'),
+  periodoMeses: z.coerce.number().int().min(1).max(120),
   color: z.string().min(1, 'Selecciona un color'),
   icono: z.string().min(1, 'Selecciona un icono'),
 });

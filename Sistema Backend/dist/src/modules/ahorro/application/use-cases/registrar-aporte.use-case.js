@@ -39,12 +39,11 @@ let RegistrarAporteUseCase = class RegistrarAporteUseCase {
         if (comprobanteUsado) {
             throw new ahorro_errors_1.ComprobanteAlreadyTakenError();
         }
-        const meta = await this.metaConfig.getOrCreate();
         return this.aportes.create({
             cuentaId: input.cuentaId,
             mes: input.mes,
             monto: input.monto,
-            metaMensual: meta.metaMensual,
+            metaMensual: ownership.metaMensual,
             referencia: input.referencia ?? null,
             comprobante: input.comprobante,
             urlArchivo: input.urlArchivo,

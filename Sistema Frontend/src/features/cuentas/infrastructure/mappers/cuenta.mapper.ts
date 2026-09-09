@@ -40,6 +40,7 @@ function toCuentaResumen(dto: CuentaResumenDTO): CuentaResumen {
     saldoPendiente: dto.saldoPendiente,
     progresoMes: dto.progresoMes,
     metaMensual: dto.metaMensual,
+    periodoMeses: dto.periodoMeses ?? 12,
     metaCumplida: dto.metaCumplida,
   };
 }
@@ -101,6 +102,7 @@ export function toCalendarioAhorro(dto: CalendarioAhorroDTO): CalendarioAhorro {
     anio: dto.anio,
     totalAhorrado: dto.totalAhorrado,
     mesesCumplidos: dto.mesesCumplidos,
+    periodoMeses: dto.periodoMeses ?? 12,
     metaMensual: dto.metaMensual,
     metaMinima: dto.metaMinima,
     metaMaxima: dto.metaMaxima,

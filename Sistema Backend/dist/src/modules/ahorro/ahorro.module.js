@@ -48,13 +48,14 @@ const actualizar_banner_use_case_1 = require("./application/use-cases/actualizar
 const eliminar_banner_use_case_1 = require("./application/use-cases/eliminar-banner.use-case");
 const ahorro_controller_1 = require("./presentation/controllers/ahorro.controller");
 const admin_ahorro_controller_1 = require("./presentation/controllers/admin-ahorro.controller");
+const contador_aportes_controller_1 = require("./presentation/controllers/contador-aportes.controller");
 let AhorroModule = class AhorroModule {
 };
 exports.AhorroModule = AhorroModule;
 exports.AhorroModule = AhorroModule = __decorate([
     (0, common_1.Module)({
         imports: [auth_module_1.AuthModule],
-        controllers: [ahorro_controller_1.AhorroController, admin_ahorro_controller_1.AdminAhorroController],
+        controllers: [ahorro_controller_1.AhorroController, admin_ahorro_controller_1.AdminAhorroController, contador_aportes_controller_1.ContadorAportesController],
         providers: [
             prisma_cuenta_repository_1.PrismaCuentaRepository,
             prisma_aporte_repository_1.PrismaAporteRepository,

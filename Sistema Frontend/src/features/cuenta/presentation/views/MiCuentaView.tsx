@@ -1,5 +1,4 @@
 // Mi Cuenta — total ahorrado, datos y código de invitación
-import { useState } from 'react';
 import { StatusBadge } from '@shared/ui/molecules/StatusBadge';
 import { SectionCard } from '@shared/ui/molecules/SectionCard';
 import { NavIcon } from '@shared/ui/atoms/NavIcon';
@@ -7,11 +6,6 @@ import { formatCurrency } from '@shared/lib/formatters';
 import { useCuentaActiva } from '@shared/hooks/useCuentaActiva';
 import { useAuth } from '@shared/hooks/useAuth';
 import { CambiarCuentaActions } from '@features/cuentas/presentation/components/CambiarCuentaActions';
-import {
-  AgregarCuentaButton,
-  AgregarCuentaPanel,
-} from '@features/cuentas/presentation/components/AgregarCuentaPanel';
-import { InvitarCuentaSection } from '@features/invitaciones/presentation/components/InvitarCuentaSection';
 import { usePagosAhorro } from '@features/ahorro/application/hooks/usePagosAhorro';
 import { META_MENSUAL_OBLIGATORIA } from '@features/ahorro/domain/pago.entity';
 
@@ -19,7 +13,6 @@ export function MiCuentaView() {
   const { cuentaActiva } = useCuentaActiva();
   const { user } = useAuth();
   const { resumen } = usePagosAhorro({ cuentaId: cuentaActiva?.id });
-  const [mostrarNuevaCuenta, setMostrarNuevaCuenta] = useState(false);
 
   if (!cuentaActiva) return null;
 
@@ -60,17 +53,12 @@ export function MiCuentaView() {
             </div>
             <div className="flex flex-wrap gap-2">
               <CambiarCuentaActions />
-              <AgregarCuentaButton onClick={() => setMostrarNuevaCuenta(true)} />
             </div>
           </div>
         </div>
       </div>
 
-      {mostrarNuevaCuenta && (
-        <AgregarCuentaPanel onClose={() => setMostrarNuevaCuenta(false)} />
-      )}
-
-      <div className="grid w-full min-h-0 flex-1 gap-4 lg:grid-cols-2 lg:items-stretch lg:gap-6">
+      <div className="w-full min-h-0 flex-1">
         <SectionCard title="Datos de la cuenta" className="h-full min-h-0">
           <dl className="divide-y divide-slate-100">
             <div className="flex items-center justify-between gap-4 py-2.5">
@@ -104,7 +92,6 @@ export function MiCuentaView() {
           </dl>
         </SectionCard>
 
-        <InvitarCuentaSection className="h-full min-h-0" />
       </div>
     </div>
   );

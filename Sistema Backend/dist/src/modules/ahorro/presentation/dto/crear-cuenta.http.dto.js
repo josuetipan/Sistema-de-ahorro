@@ -19,6 +19,8 @@ class CrearCuentaHttpDto {
     moneda;
     color;
     icono;
+    metaMensual;
+    periodoMeses;
 }
 exports.CrearCuentaHttpDto = CrearCuentaHttpDto;
 __decorate([
@@ -52,4 +54,17 @@ __decorate([
     (0, class_validator_1.MaxLength)(40),
     __metadata("design:type", String)
 ], CrearCuentaHttpDto.prototype, "icono", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)({ maxDecimalPlaces: 2 }, { message: 'metaMensual debe ser numérica' }),
+    (0, class_validator_1.Min)(1, { message: 'La meta mensual debe ser mayor que cero' }),
+    __metadata("design:type", Number)
+], CrearCuentaHttpDto.prototype, "metaMensual", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)({}, { message: 'periodoMeses debe ser numérico' }),
+    (0, class_validator_1.Min)(1, { message: 'El período debe ser de al menos 1 mes' }),
+    (0, class_validator_1.Max)(120, { message: 'El período no puede superar 120 meses' }),
+    __metadata("design:type", Number)
+], CrearCuentaHttpDto.prototype, "periodoMeses", void 0);
 //# sourceMappingURL=crear-cuenta.http.dto.js.map

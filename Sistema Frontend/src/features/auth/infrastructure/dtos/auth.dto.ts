@@ -33,7 +33,8 @@ export interface RegisterDTO {
   identification: string;
   email: string;
   phoneNumber: string;
-  roleCode: 'CUSTOMER';
+  address?: string;
+  roleCode: 'ADMIN' | 'OPERATOR' | 'CUSTOMER' | 'ACCOUNTANT';
   password: string;
 }
 

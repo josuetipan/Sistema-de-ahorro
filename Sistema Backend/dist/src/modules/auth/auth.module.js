@@ -26,6 +26,7 @@ const change_password_use_case_1 = require("./application/use-cases/change-passw
 const set_user_password_use_case_1 = require("./application/use-cases/set-user-password.use-case");
 const create_role_use_case_1 = require("./application/use-cases/create-role.use-case");
 const create_admin_user_use_case_1 = require("./application/use-cases/create-admin-user.use-case");
+const manage_admin_users_use_case_1 = require("./application/use-cases/manage-admin-users.use-case");
 const prisma_user_repository_1 = require("./infrastructure/persistence/prisma/prisma-user.repository");
 const prisma_role_repository_1 = require("./infrastructure/persistence/prisma/prisma-role.repository");
 const prisma_city_repository_1 = require("./infrastructure/persistence/prisma/prisma-city.repository");
@@ -40,6 +41,7 @@ const roles_guard_1 = require("./infrastructure/auth/roles.guard");
 const auth_controller_1 = require("./presentation/controllers/auth.controller");
 const role_controller_1 = require("./presentation/controllers/role.controller");
 const admin_controller_1 = require("./presentation/controllers/admin.controller");
+const admin_users_controller_1 = require("./presentation/controllers/admin-users.controller");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -51,7 +53,7 @@ exports.AuthModule = AuthModule = __decorate([
                 secret: (0, jwt_access_secret_1.getJwtAccessSecret)(),
             }),
         ],
-        controllers: [auth_controller_1.AuthController, role_controller_1.RoleController, admin_controller_1.AdminController],
+        controllers: [auth_controller_1.AuthController, role_controller_1.RoleController, admin_controller_1.AdminController, admin_users_controller_1.AdminUsersController],
         providers: [
             prisma_user_repository_1.PrismaUserRepository,
             prisma_role_repository_1.PrismaRoleRepository,
@@ -145,6 +147,11 @@ exports.AuthModule = AuthModule = __decorate([
                     city_repository_port_1.CITY_REPOSITORY,
                     admin_user_provisioning_port_1.ADMIN_USER_PROVISIONING,
                 ],
+            },
+            {
+                provide: manage_admin_users_use_case_1.ManageAdminUsersUseCase,
+                useFactory: (users, roles) => new manage_admin_users_use_case_1.ManageAdminUsersUseCase(users, roles),
+                inject: [user_repository_port_1.USER_REPOSITORY, role_repository_port_1.ROLE_REPOSITORY],
             },
         ],
         exports: [roles_guard_1.RolesGuard, jwt_access_strategy_1.JwtAccessStrategy, user_repository_port_1.USER_REPOSITORY],

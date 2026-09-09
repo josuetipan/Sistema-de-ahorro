@@ -28,6 +28,7 @@ export function useSociosAhorroAdmin(params: ListarSociosAdminParams) {
     nombre,
     email,
     identification,
+    roleCode,
     cuentaEstado,
   } = params;
 
@@ -45,6 +46,7 @@ export function useSociosAhorroAdmin(params: ListarSociosAdminParams) {
         nombre,
         email,
         identification,
+        roleCode,
         cuentaEstado,
       });
       setSocios(response.data);
@@ -58,7 +60,7 @@ export function useSociosAhorroAdmin(params: ListarSociosAdminParams) {
     } finally {
       setCargando(false);
     }
-  }, [page, limit, q, estado, codigo, nombre, email, identification, cuentaEstado]);
+  }, [page, limit, q, estado, codigo, nombre, email, identification, roleCode, cuentaEstado]);
 
   useEffect(() => {
     void recargar();

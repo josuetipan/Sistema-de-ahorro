@@ -26,6 +26,7 @@ export interface AportesAdminResponse {
 
 export type EstadoSocioAdmin = 'activo' | 'inactivo' | 'pendiente';
 export type EstadoCuentaAhorroAdmin = 'activa' | 'cerrada' | 'inactiva' | 'bloqueada';
+export type RoleCodeAdmin = 'ADMIN' | 'CUSTOMER' | 'ACCOUNTANT';
 
 export interface CuentaSocioAdmin {
   idCuenta: string;
@@ -45,10 +46,12 @@ export interface CuentaSocioAdmin {
 }
 
 export interface SocioAhorroAdmin {
-  idSocio: string;
-  codigo: string;
+  idSocio: string | null;
+  codigo: string | null;
   estado: EstadoSocioAdmin;
   userId: string;
+  roleCode: RoleCodeAdmin;
+  roleName: string;
   fullName: string;
   email: string;
   identification: string;
@@ -116,6 +119,7 @@ export interface ListarSociosAdminParams {
   nombre?: string;
   email?: string;
   identification?: string;
+  roleCode?: RoleCodeAdmin | '';
   cuentaEstado?: EstadoCuentaAhorroAdmin | '';
 }
 

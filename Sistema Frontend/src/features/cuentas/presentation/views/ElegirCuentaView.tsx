@@ -62,7 +62,7 @@ export function ElegirCuentaView() {
         </h1>
         <p className="mt-2 text-sm text-slate-500 md:text-base">
           {resumen
-            ? `Meta mensual de ${resumen.metaMensual} USD. Solo los aportes verificados suman al saldo disponible.`
+            ? 'Elige una cuenta o crea una nueva con la meta mensual que quieres alcanzar.'
             : 'Cargando tu información de ahorro…'}
         </p>
       </div>
