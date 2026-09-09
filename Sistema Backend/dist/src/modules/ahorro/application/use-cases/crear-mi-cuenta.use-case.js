@@ -33,6 +33,8 @@ let CrearMiCuentaUseCase = class CrearMiCuentaUseCase {
             moneda: input.moneda,
             color: input.color ?? null,
             icono: input.icono ?? null,
+            metaMensual: input.metaMensual,
+            periodoMeses: input.periodoMeses,
         });
         return { socioId, cuenta };
     }

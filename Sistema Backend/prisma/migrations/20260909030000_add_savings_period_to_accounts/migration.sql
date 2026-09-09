@@ -1,0 +1,2 @@
+ALTER TABLE "cuentas"
+ADD COLUMN "periodo_meses" INTEGER NOT NULL DEFAULT 12;

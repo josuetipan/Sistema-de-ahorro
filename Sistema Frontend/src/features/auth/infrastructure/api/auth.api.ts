@@ -50,3 +50,18 @@ export async function postRefreshToken(): Promise<{ token: string }> {
   const body = 'body' in data ? data.body : data;
   return { token: body.accessToken };
 }
+
+export interface UpdateOwnProfilePayload {
+  email?: string;
+  fullName?: string;
+  phoneNumber?: string;
+  address?: string;
+}
+
+export async function patchOwnProfile(payload: UpdateOwnProfilePayload) {
+  const { data } = await httpClient.patch<BackendEnvelope<unknown> | unknown>(
+    API_CONFIG.endpoints.auth.me,
+    payload,
+  );
+  return 'body' in (data as object) ? (data as BackendEnvelope<unknown>).body : data;
+}

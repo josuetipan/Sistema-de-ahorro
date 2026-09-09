@@ -39,10 +39,11 @@ import { ActualizarBannerUseCase } from './application/use-cases/actualizar-bann
 import { EliminarBannerUseCase } from './application/use-cases/eliminar-banner.use-case';
 import { AhorroController } from './presentation/controllers/ahorro.controller';
 import { AdminAhorroController } from './presentation/controllers/admin-ahorro.controller';
+import { ContadorAportesController } from './presentation/controllers/contador-aportes.controller';
 
 @Module({
   imports: [AuthModule],
-  controllers: [AhorroController, AdminAhorroController],
+  controllers: [AhorroController, AdminAhorroController, ContadorAportesController],
   providers: [
     PrismaCuentaRepository,
     PrismaAporteRepository,

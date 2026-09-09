@@ -25,6 +25,7 @@ const listSelect = {
   meta_mensual: true,
   referencia: true,
   comprobante: true,
+  url_archivo: true,
   archivo_nombre: true,
   descripcion: true,
   estado: true,
@@ -265,6 +266,7 @@ export class PrismaAporteRepository implements AporteRepositoryPort {
     ]);
     const items: AporteAdminItem[] = rows.map((row) => ({
       ...toListItem(row),
+      urlArchivo: row.url_archivo,
       numeroCuenta: row.cuenta.numeroCuenta,
       cuentaNombre: row.cuenta.nombre,
       socioId: row.cuenta.socio.id_socio,

@@ -14,6 +14,7 @@ export type NavIconName =
   | 'components'
   | 'logout'
   | 'search'
+  | 'refresh'
   | 'download'
   | 'transfer'
   | 'chart'
@@ -110,6 +111,14 @@ const PATHS: Record<NavIconName, ReactNode> = {
     <>
       <circle cx="11" cy="11" r="8" />
       <path d="m21 21-4.35-4.35" />
+    </>
+  ),
+  refresh: (
+    <>
+      <path d="M20 11a8 8 0 0 0-14.9-4L3 9" />
+      <path d="M3 4v5h5" />
+      <path d="M4 13a8 8 0 0 0 14.9 4L21 15" />
+      <path d="M21 20v-5h-5" />
     </>
   ),
   download: (

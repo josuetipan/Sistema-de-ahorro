@@ -68,7 +68,7 @@ export function LoginForm() {
           <Input
             type="email"
             inputMode="email"
-            autoComplete="email"
+            autoComplete="username"
             spellCheck={false}
             placeholder="tu@correo.com"
             hasError={!!errors.email}

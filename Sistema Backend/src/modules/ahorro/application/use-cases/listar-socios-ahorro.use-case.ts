@@ -31,6 +31,7 @@ export class ListarSociosAhorroUseCase
       nombre: input.nombre,
       email: input.email,
       identification: input.identification,
+      roleCode: input.roleCode,
       cuentaEstado: input.cuentaEstado,
     });
     return paginate(items, total, input.page, input.limit);

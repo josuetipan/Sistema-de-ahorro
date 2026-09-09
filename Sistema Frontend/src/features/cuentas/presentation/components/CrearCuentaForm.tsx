@@ -28,6 +28,8 @@ export function CrearCuentaForm({ onSubmit, onCancel, isSubmitting = false }: Cr
     resolver: zodResolver(crearCuentaSchema),
     defaultValues: {
       nombre: '',
+      metaMensual: 500,
+      periodoMeses: 12,
       color: COLORES_CUENTA[0].value,
       icono: ICONOS_CUENTA[0].value,
     },
@@ -40,6 +42,8 @@ export function CrearCuentaForm({ onSubmit, onCancel, isSubmitting = false }: Cr
       moneda: 'USD',
       color: data.color,
       icono: data.icono,
+      metaMensual: data.metaMensual,
+      periodoMeses: data.periodoMeses,
     });
   };
 
@@ -51,6 +55,29 @@ export function CrearCuentaForm({ onSubmit, onCancel, isSubmitting = false }: Cr
           placeholder="Ej. Ahorro vacaciones, Educación…"
           hasError={!!errors.nombre}
           {...register('nombre')}
+        />
+      </FormField>
+
+      <FormField label="Período de ahorro (meses)" htmlFor="periodo-meses-cuenta" error={errors.periodoMeses?.message} required>
+        <Input
+          id="periodo-meses-cuenta"
+          type="number"
+          min="1"
+          max="120"
+          step="1"
+          hasError={!!errors.periodoMeses}
+          {...register('periodoMeses', { valueAsNumber: true })}
+        />
+      </FormField>
+
+      <FormField label="Meta mensual de ahorro (USD)" htmlFor="meta-mensual-cuenta" error={errors.metaMensual?.message} required>
+        <Input
+          id="meta-mensual-cuenta"
+          type="number"
+          min="1"
+          step="0.01"
+          hasError={!!errors.metaMensual}
+          {...register('metaMensual', { valueAsNumber: true })}
         />
       </FormField>
 

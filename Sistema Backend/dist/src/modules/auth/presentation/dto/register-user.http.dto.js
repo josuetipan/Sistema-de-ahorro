@@ -18,14 +18,15 @@ function collapseInternalSpaces(value) {
 }
 const ASSIGNABLE_ROLES = [
     user_role_1.UserRole.ADMIN,
-    user_role_1.UserRole.OPERATOR,
     user_role_1.UserRole.CUSTOMER,
+    user_role_1.UserRole.ACCOUNTANT,
 ];
 class RegisterUserHttpDto {
     fullName;
     identification;
     email;
     phoneNumber;
+    address;
     roleCode;
     codigoReferencia;
     password;
@@ -71,6 +72,14 @@ __decorate([
     (0, class_transformer_1.Transform)(({ value }) => typeof value === 'string' ? value.trim() : value),
     __metadata("design:type", String)
 ], RegisterUserHttpDto.prototype, "phoneNumber", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(5, { message: 'La dirección debe tener al menos 5 caracteres' }),
+    (0, class_validator_1.MaxLength)(150, { message: 'La dirección admite como máximo 150 caracteres' }),
+    (0, class_transformer_1.Transform)(({ value }) => typeof value === 'string' ? value.trim() : value),
+    __metadata("design:type", String)
+], RegisterUserHttpDto.prototype, "address", void 0);
 __decorate([
     (0, class_validator_1.IsIn)(ASSIGNABLE_ROLES, {
         message: `roleCode debe ser uno de: ${ASSIGNABLE_ROLES.join(', ')}`,

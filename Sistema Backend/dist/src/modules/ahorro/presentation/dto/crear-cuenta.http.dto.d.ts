@@ -5,4 +5,6 @@ export declare class CrearCuentaHttpDto {
     moneda?: string;
     color?: string;
     icono?: string;
+    metaMensual: number;
+    periodoMeses: number;
 }

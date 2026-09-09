@@ -26,8 +26,8 @@ export const CONTADOR_NAV_ITEMS: NavItem[] = [
 ];
 
 export const ADMIN_NAV_ITEMS: NavItem[] = [
-  { to: ROUTES.ADMIN, label: 'Dashboard', roles: ['admin'] },
-  { to: ROUTES.ADMIN_SOCIOS, label: 'Socios / Clientes', roles: ['admin'] },
+  { to: ROUTES.ADMIN, label: 'Reporte de ahorros', roles: ['admin'] },
+  { to: ROUTES.ADMIN_SOCIOS, label: 'Administración de usuarios', roles: ['admin'] },
   { to: ROUTES.ADMIN_CUENTAS_AHORRO, label: 'Solicitudes', roles: ['admin'] },
   { to: ROUTES.ADMIN_CONFIGURACION, label: 'Configuracion', roles: ['admin'] },
 ];

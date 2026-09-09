@@ -33,7 +33,7 @@ import type {
   EstadoSolicitudCuenta,
   TipoSolicitudCuenta,
 } from '@prisma/client';
-import { UserRole } from '../../../auth/domain/user-role';
+import { UserRole, type UserRoleName } from '../../../auth/domain/user-role';
 import { Roles } from '../../../auth/infrastructure/auth/roles.decorator';
 import { RolesGuard } from '../../../auth/infrastructure/auth/roles.guard';
 import {
@@ -234,6 +234,7 @@ export class AdminAhorroController {
     @Query('nombre') nombre?: string,
     @Query('email') email?: string,
     @Query('identification') identification?: string,
+    @Query('roleCode') roleCode?: string,
     @Query('cuentaEstado') cuentaEstado?: string,
   ) {
     if (estado && !ESTADOS_SOCIO.includes(estado as EstadoSocio)) {
@@ -249,6 +250,10 @@ export class AdminAhorroController {
         `cuentaEstado debe ser uno de: ${ESTADOS_CUENTA.join(', ')}`,
       );
     }
+    const roles = Object.values(UserRole);
+    if (roleCode && !roles.includes(roleCode as UserRoleName)) {
+      throw new BadRequestException(`roleCode debe ser uno de: ${roles.join(', ')}`);
+    }
     const pagination = parsePagination(page, limit);
     return this.listarSocios.execute({
       page: pagination.page,
@@ -259,6 +264,7 @@ export class AdminAhorroController {
       nombre: cleanQueryParam(nombre),
       email: cleanQueryParam(email),
       identification: cleanQueryParam(identification),
+      roleCode: cleanQueryParam(roleCode) as UserRoleName | undefined,
       cuentaEstado: cuentaEstado as EstadoCuenta | undefined,
     });
   }

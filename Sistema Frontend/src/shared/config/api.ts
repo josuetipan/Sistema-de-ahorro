@@ -11,6 +11,8 @@ export const API_CONFIG = {
       register: '/auth/register',
       refresh: '/auth/refresh',
       resetPassword: '/auth/reset-password',
+      users: '/auth/users',
+      me: '/auth/me',
     },
     ahorro: {
       resumen: '/ahorro/resumen',
@@ -27,6 +29,9 @@ export const API_CONFIG = {
         socios: '/admin/ahorro/socios',
         solicitudes: '/admin/ahorro/solicitudes',
       },
+    },
+    contador: {
+      aportes: '/contador/aportes',
     },
     usuarios: '/usuarios',
     cuentas: '/cuentas',

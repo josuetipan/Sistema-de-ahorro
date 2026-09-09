@@ -27,6 +27,7 @@ export interface CalendarioResult {
     anio: number;
     totalAhorrado: number;
     mesesCumplidos: number;
+    periodoMeses: number;
     metaMensual: number;
     metaMinima: number;
     metaMaxima: number;

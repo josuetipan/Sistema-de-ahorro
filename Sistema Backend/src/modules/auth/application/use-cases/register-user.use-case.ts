@@ -18,6 +18,7 @@ export interface RegisterUserInput {
   identification: string;
   email: string;
   phoneNumber: string;
+  address?: string;
   roleCode: UserRoleName;
   codigoReferencia?: string;
   password?: string;
@@ -172,6 +173,12 @@ export class RegisterUserUseCase {
       pendingPasswordReset,
     );
     await this.users.save(user);
+    if (input.address?.trim()) {
+      await this.users.updateForAdmin({
+        id: user.id,
+        address: input.address.trim(),
+      });
+    }
 
     let socio:
       | { id: string; codigo: string; estado: string }

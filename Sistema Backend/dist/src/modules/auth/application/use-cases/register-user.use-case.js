@@ -148,6 +148,12 @@ class RegisterUserUseCase {
         const passwordHash = await bcrypt.hash(plainPassword, SALT_ROUNDS);
         const user = new user_entity_1.User((0, node_crypto_1.randomUUID)(), usuario, email, passwordHash, input.fullName.trim(), roleId, [input.roleCode], true, cityId, cityName, DEFAULT_MATURITY, input.phoneNumber.trim(), input.identification.trim(), pendingPasswordReset);
         await this.users.save(user);
+        if (input.address?.trim()) {
+            await this.users.updateForAdmin({
+                id: user.id,
+                address: input.address.trim(),
+            });
+        }
         let socio;
         if (input.roleCode === user_role_1.UserRole.CUSTOMER) {
             const codigo = await this.resolveSocioCodigo(input.codigoReferencia);

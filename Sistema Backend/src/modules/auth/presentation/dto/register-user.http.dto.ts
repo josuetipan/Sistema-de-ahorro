@@ -17,8 +17,8 @@ function collapseInternalSpaces(value: string): string {
 
 const ASSIGNABLE_ROLES: UserRoleName[] = [
   UserRole.ADMIN,
-  UserRole.OPERATOR,
   UserRole.CUSTOMER,
+  UserRole.ACCOUNTANT,
 ];
 
 export class RegisterUserHttpDto {
@@ -64,6 +64,15 @@ export class RegisterUserHttpDto {
     typeof value === 'string' ? value.trim() : value,
   )
   phoneNumber!: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(5, { message: 'La dirección debe tener al menos 5 caracteres' })
+  @MaxLength(150, { message: 'La dirección admite como máximo 150 caracteres' })
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  address?: string;
 
   @IsIn(ASSIGNABLE_ROLES, {
     message: `roleCode debe ser uno de: ${ASSIGNABLE_ROLES.join(', ')}`,
